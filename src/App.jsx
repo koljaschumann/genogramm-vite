@@ -3,6 +3,7 @@ import { Users, Plus, Trash2, Edit2, Save, X, Heart, AlertCircle, Download } fro
 import BugReportButton from './components/BugReportButton';
 import StatsCard from './components/StatsCard';
 import PeopleList from './components/PeopleList';
+import TutorialModal from './components/TutorialModal';
 
 const GenogramGenerator = () => {
   const [people, setPeople] = useState([]);
@@ -11,6 +12,7 @@ const GenogramGenerator = () => {
   const [showRelForm, setShowRelForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const svgRef = useRef(null);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     age: '',
@@ -261,7 +263,6 @@ const GenogramGenerator = () => {
     const ctx = canvas.getContext('2d');
     const img = new Image();
 
-    // Setze Canvas-Größe basierend auf SVG
     const svgWidth = svg.width.baseVal.value || 1200;
     const svgHeight = svg.height.baseVal.value || 800;
     canvas.width = svgWidth;
@@ -310,113 +311,12 @@ const GenogramGenerator = () => {
     return `${p1.name} ${subtypeLabel} ${p2.name}`;
   };
 
-  const renderRelationshipLine = (x1, y1, x2, y2, quality, key) => {
-    const qualityStyle = relationshipQualities[quality] || relationshipQualities['normal'];
-    const color = qualityStyle.color;
-    const width = qualityStyle.width || 2;
-    
-    // Berechne Mittelpunkt und Winkel
-    const midX = (x1 + x2) / 2;
-    const midY = (y1 + y2) / 2;
-    const angle = Math.atan2(y2 - y1, x2 - x1);
-    const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-    
-    switch (qualityStyle.pattern) {
-      case 'solid':
-        return <line key={key} x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={width} />;
-      
-      case 'double':
-        // Zwei parallele Linien
-        const offset = 3;
-        const perpX = -Math.sin(angle) * offset;
-        const perpY = Math.cos(angle) * offset;
-        return (
-          <g key={key}>
-            <line x1={x1 + perpX} y1={y1 + perpY} x2={x2 + perpX} y2={y2 + perpY} stroke={color} strokeWidth={width} />
-            <line x1={x1 - perpX} y1={y1 - perpY} x2={x2 - perpX} y2={y2 - perpY} stroke={color} strokeWidth={width} />
-          </g>
-        );
-      
-      case 'dashed':
-        return <line key={key} x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={width} strokeDasharray="8,4" />;
-      
-      case 'zigzag':
-        // Zick-Zack Linie
-        const segments = 8;
-        const amplitude = 6;
-        let path = `M ${x1} ${y1}`;
-        for (let i = 1; i <= segments; i++) {
-          const t = i / segments;
-          const x = x1 + (x2 - x1) * t;
-          const y = y1 + (y2 - y1) * t;
-          const perpOffset = (i % 2 === 0 ? amplitude : -amplitude);
-          const offsetX = -Math.sin(angle) * perpOffset;
-          const offsetY = Math.cos(angle) * perpOffset;
-          path += ` L ${x + offsetX} ${y + offsetY}`;
-        }
-        return <path key={key} d={path} stroke={color} strokeWidth={width} fill="none" />;
-      
-      case 'wavy':
-        // Wellenlinie
-        const waveSegments = 6;
-        const waveAmplitude = 5;
-        let wavePath = `M ${x1} ${y1}`;
-        for (let i = 1; i <= waveSegments * 2; i++) {
-          const t = i / (waveSegments * 2);
-          const x = x1 + (x2 - x1) * t;
-          const y = y1 + (y2 - y1) * t;
-          const waveOffset = Math.sin(i * Math.PI / 2) * waveAmplitude;
-          const offsetX = -Math.sin(angle) * waveOffset;
-          const offsetY = Math.cos(angle) * waveOffset;
-          wavePath += ` L ${x + offsetX} ${y + offsetY}`;
-        }
-        return <path key={key} d={wavePath} stroke={color} strokeWidth={width} fill="none" />;
-      
-      case 'crossed':
-        // Durchgestrichene Linie
-        const crossSize = 12;
-        const crossX = -Math.sin(angle) * crossSize;
-        const crossY = Math.cos(angle) * crossSize;
-        return (
-          <g key={key}>
-            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={width} />
-            <line x1={midX - crossX/2} y1={midY - crossY/2} x2={midX + crossX/2} y2={midY + crossY/2} stroke={color} strokeWidth={width + 1} />
-          </g>
-        );
-      
-      case 'double-crossed':
-        // Doppelt durchgestrichene Linie
-        const dcrossSize = 12;
-        const dcrossX = -Math.sin(angle) * dcrossSize;
-        const dcrossY = Math.cos(angle) * dcrossSize;
-        const spacing = 15;
-        const spacingX = Math.cos(angle) * spacing;
-        const spacingY = Math.sin(angle) * spacing;
-        return (
-          <g key={key}>
-            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={width} />
-            <line x1={midX - spacingX - dcrossX/2} y1={midY - spacingY - dcrossY/2} x2={midX - spacingX + dcrossX/2} y2={midY - spacingY + dcrossY/2} stroke={color} strokeWidth={width + 1} />
-            <line x1={midX + spacingX - dcrossX/2} y1={midY + spacingY - dcrossY/2} x2={midX + spacingX + dcrossX/2} y2={midY + spacingY + dcrossY/2} stroke={color} strokeWidth={width + 1} />
-          </g>
-        );
-      
-      case 'dash-dot':
-        return <line key={key} x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={width} strokeDasharray="8,4,2,4" />;
-      
-      default:
-        return <line key={key} x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={width} />;
-    }
-  };
-
   const renderGenogram = () => {
     if (people.length === 0) return null;
 
     const generations = {};
-    
-    // Berechne Generationen basierend auf Eltern-Kind und Großeltern-Beziehungen
     const processedGenerations = new Set();
     
-    // Finde Wurzelpersonen (ohne Eltern oder Großeltern-Beziehung als Kind)
     const roots = people.filter(p => 
       !relationships.some(r => 
         (r.type === 'parent-child' || r.type === 'grandparent') && r.person2 === p.id
@@ -428,7 +328,6 @@ const GenogramGenerator = () => {
       processedGenerations.add(p.id);
     });
 
-    // Berechne Generationen iterativ
     let changed = true;
     let iterations = 0;
     while (changed && iterations < 10) {
@@ -452,14 +351,12 @@ const GenogramGenerator = () => {
       });
     }
 
-    // Personen ohne Generation auf Generation 0 setzen
     people.forEach(p => {
       if (generations[p.id] === undefined) {
         generations[p.id] = 0;
       }
     });
 
-    // Gruppiere nach Generation
     const genLevels = {};
     people.forEach(p => {
       const gen = generations[p.id];
@@ -468,10 +365,11 @@ const GenogramGenerator = () => {
     });
 
     const maxGen = Math.max(...Object.keys(genLevels).map(Number));
+    const spacing = 160;
+    const verticalSpacing = 200;
 
     return (
       <svg ref={svgRef} width="100%" height={Math.max(500, (maxGen + 1) * 200)} style={{ border: '1px solid #ddd', background: '#fafafa' }}>
-        {/* Render Beziehungslinien */}
         {relationships.map(rel => {
           const p1 = people.find(p => p.id === rel.person1);
           const p2 = people.find(p => p.id === rel.person2);
@@ -503,7 +401,6 @@ const GenogramGenerator = () => {
           );
         })}
 
-        {/* Render Personen */}
         {Object.keys(genLevels).map(gen => 
           genLevels[gen].map((person, idx) => {
             const x = 120 + idx * spacing;
@@ -548,7 +445,6 @@ const GenogramGenerator = () => {
                   <line x1={x} y1={y} x2={x + 60} y2={y + 60} stroke="#2c3e50" strokeWidth="2" />
                 )}
                 
-                {/* Name */}
                 <text 
                   x={x + 30} 
                   y={y + 85} 
@@ -559,7 +455,6 @@ const GenogramGenerator = () => {
                   {person.name}
                 </text>
                 
-                {/* Alter */}
                 {person.age && (
                   <text 
                     x={x + 30} 
@@ -571,7 +466,6 @@ const GenogramGenerator = () => {
                   </text>
                 )}
                 
-                {/* Beruf */}
                 {person.profession && (
                   <text 
                     x={x + 30} 
@@ -584,7 +478,6 @@ const GenogramGenerator = () => {
                   </text>
                 )}
                 
-                {/* Diagnosen - in mehreren Zeilen wenn zu lang */}
                 {person.diagnoses && (
                   <>
                     {person.diagnoses.length > 25 ? (
@@ -622,7 +515,6 @@ const GenogramGenerator = () => {
                   </>
                 )}
 
-                {/* Todesursache */}
                 {person.status === 'deceased' && person.causeOfDeath && (
                   <text 
                     x={x + 30} 
@@ -653,6 +545,13 @@ const GenogramGenerator = () => {
             </div>
             <div className="flex gap-2">
               <button
+                onClick={() => setShowTutorial(true)}
+                className="flex items-center gap-2 bg-white text-purple-600 border-2 border-purple-600 btn-modern"
+              >
+                <span>📚</span>
+                Tutorial
+              </button>
+              <button
                 onClick={() => {
                   resetForm();
                   setShowForm(!showForm);
@@ -679,7 +578,6 @@ const GenogramGenerator = () => {
             </div>
           </div>
 
-          {/* Personen-Formular */}
           {showForm && (
             <div className="bg-gray-50 p-6 rounded-lg mb-6">
               <h3 className="text-lg font-semibold mb-4">
@@ -859,7 +757,6 @@ const GenogramGenerator = () => {
             </div>
           )}
 
-          {/* Beziehungs-Formular */}
           {showRelForm && (
             <div className="bg-purple-50 p-6 rounded-lg mb-6">
               <h3 className="text-lg font-semibold mb-4">Neue Beziehung hinzufügen</h3>
@@ -947,95 +844,95 @@ const GenogramGenerator = () => {
             </div>
           )}
 
-         {/* Main Layout mit Sidebar */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Sidebar */}
             <div className="space-y-6">
               <StatsCard people={people} relationships={relationships} />
               <PeopleList people={people} onEdit={editPerson} onDelete={deletePerson} />
             </div>
             
-            {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
-
-          {/* Beziehungsliste */}
-          {relationships.length > 0 && (
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-3">Erfasste Beziehungen ({relationships.length})</h2>
-              <div className="space-y-2">
-                {relationships.map(rel => (
-                  <div key={rel.id} className="bg-purple-50 p-3 rounded flex items-center justify-between">
-                    <div>
-                      <span className="font-medium">{getRelationshipLabel(rel)}</span>
-                      <span className="text-sm text-gray-600 ml-2">
-                        ({relationshipQualities[rel.quality]?.label})
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => deleteRelationship(rel.id)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+              {relationships.length > 0 && (
+                <div className="mb-6">
+                  <h2 className="text-xl font-semibold mb-3">Erfasste Beziehungen ({relationships.length})</h2>
+                  <div className="space-y-2">
+                    {relationships.map(rel => (
+                      <div key={rel.id} className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl flex items-center justify-between hover:shadow-md transition-all">
+                        <div>
+                          <span className="font-medium">{getRelationshipLabel(rel)}</span>
+                          <span className="text-sm text-gray-600 ml-2">
+                            ({relationshipQualities[rel.quality]?.label})
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => deleteRelationship(rel.id)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+                </div>
+              )}
 
-        {/* Genogramm */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-800">Genogramm-Visualisierung</h2>
-            {people.length > 0 && (
-              <div className="flex gap-2">
-                <button
-                  onClick={downloadAsPNG}
-                  className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-                >
-                  <Download className="w-5 h-5" />
-                  Als PNG
-                </button>
-                <button
-                  onClick={downloadAsSVG}
-                  className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-                >
-                  <Download className="w-5 h-5" />
-                  Als SVG
-                </button>
+              <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-8 card-hover">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-gray-800">Genogramm-Visualisierung</h2>
+                  {people.length > 0 && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={downloadAsPNG}
+                        className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
+                      >
+                        <Download className="w-5 h-5" />
+                        Als PNG
+                      </button>
+                      <button
+                        onClick={downloadAsSVG}
+                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                      >
+                        <Download className="w-5 h-5" />
+                        Als SVG
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div className="mb-4 p-3 bg-blue-50 rounded text-sm space-y-1">
+                  <div><strong>Legende - Personen:</strong></div>
+                  <div>• Quadrat = Männlich, Kreis = Weiblich</div>
+                  <div>• Grau mit Kreuzlinie = Verstorben</div>
+                  <div>• Orange Rahmen = Patient/in</div>
+                  <div className="mt-2"><strong>Legende - Beziehungen:</strong></div>
+                  <div>• <span style={{color: '#27ae60'}}>Dicke grüne Linie</span> = Enge/Nahe Beziehung</div>
+                  <div>• <span style={{color: '#27ae60'}}>Doppelte grüne Linien</span> = Sehr eng/Fusioniert</div>
+                  <div>• <span style={{color: '#e74c3c'}}>Rote Zick-Zack-Linie</span> = Konfliktreich</div>
+                  <div>• <span style={{color: '#e67e22'}}>Orange Wellenlinie</span> = Angespannt</div>
+                  <div>• <span style={{color: '#95a5a6'}}>Gestrichelte graue Linie</span> = Distanzierte Beziehung</div>
+                  <div>• <span style={{color: '#c0392b'}}>Durchgestrichene Linie</span> = Abgebrochene Beziehung</div>
+                  <div>• <span style={{color: '#34495e'}}>Doppelt durchgestrichen</span> = Kontaktabbruch</div>
+                  <div>• <span style={{color: '#9b59b6'}}>Strich-Punkt lila</span> = Ambivalente Beziehung</div>
+                </div>
+                {people.length === 0 ? (
+                  <div className="text-center text-gray-500 py-12">
+                    Fügen Sie Personen und Beziehungen hinzu, um das Genogramm zu erstellen
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    {renderGenogram()}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <div className="mb-4 p-3 bg-blue-50 rounded text-sm space-y-1">
-            <div><strong>Legende - Personen:</strong></div>
-            <div>• Quadrat = Männlich, Kreis = Weiblich</div>
-            <div>• Grau mit Kreuzlinie = Verstorben</div>
-            <div>• Orange Rahmen = Patient/in</div>
-            <div className="mt-2"><strong>Legende - Beziehungen:</strong></div>
-            <div>• <span style={{color: '#27ae60'}}>Dicke grüne Linie</span> = Enge/Nahe Beziehung</div>
-            <div>• <span style={{color: '#27ae60'}}>Doppelte grüne Linien</span> = Sehr eng/Fusioniert</div>
-            <div>• <span style={{color: '#e74c3c'}}>Rote Zick-Zack-Linie</span> = Konfliktreich</div>
-            <div>• <span style={{color: '#e67e22'}}>Orange Wellenlinie</span> = Angespannt</div>
-            <div>• <span style={{color: '#95a5a6'}}>Gestrichelte graue Linie</span> = Distanzierte Beziehung</div>
-            <div>• <span style={{color: '#c0392b'}}>Durchgestrichene Linie</span> = Abgebrochene Beziehung</div>
-            <div>• <span style={{color: '#34495e'}}>Doppelt durchgestrichen</span> = Kontaktabbruch</div>
-            <div>• <span style={{color: '#9b59b6'}}>Strich-Punkt lila</span> = Ambivalente Beziehung</div>
-          </div>
-          {people.length === 0 ? (
-            <div className="text-center text-gray-500 py-12">
-              Fügen Sie Personen und Beziehungen hinzu, um das Genogramm zu erstellen
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              {renderGenogram()}
-            </div>
-          )}
+          </div>
+
+          <TutorialModal 
+            isOpen={showTutorial} 
+            onClose={() => setShowTutorial(false)} 
+          />
+          
+          <BugReportButton />
         </div>
       </div>
-</div> {/* Ende Main Content */}
-          </div> {/* Ende Grid */}
-{<BugReportButton />}
     </div>
   );
 };
