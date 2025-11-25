@@ -1,11 +1,78 @@
-import React, { useState, useRef } from 'react';
-import { Users, Plus, Trash2, Edit2, Save, X, Heart, AlertCircle, Download, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Users, Plus, Trash2, Edit2, Save, X, Heart, AlertCircle, Download, ChevronDown, ChevronUp, Moon, Sun } from 'lucide-react';
 import BugReportButton from './components/BugReportButton';
 import StatsCard from './components/StatsCard';
 import PeopleList from './components/PeopleList';
 import TutorialModal from './components/TutorialModal';
+import Footer from './components/Footer';
+
+// Logo Component - Variant 2 (Professional Icon)
+const GenoFlowLogo = ({ size = "default" }) => {
+  const sizeClasses = {
+    small: "w-6 h-6 md:w-8 md:h-8",
+    default: "w-8 h-8 md:w-10 md:h-10",
+    large: "w-12 h-12 md:w-16 md:h-16"
+  };
+
+  const textSizeClasses = {
+    small: "text-lg md:text-xl",
+    default: "text-xl md:text-2xl",
+    large: "text-2xl md:text-3xl"
+  };
+
+  return (
+    <div className="flex items-center gap-2 md:gap-3">
+      <svg className={sizeClasses[size]} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style={{ stopColor: '#3b82f6', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#8b5cf6', stopOpacity: 1 }} />
+          </linearGradient>
+        </defs>
+        <circle cx="50" cy="25" r="8" fill="url(#logoGrad)"/>
+        <circle cx="35" cy="50" r="7" fill="url(#logoGrad)" opacity="0.8"/>
+        <circle cx="65" cy="50" r="7" fill="url(#logoGrad)" opacity="0.8"/>
+        <circle cx="50" cy="75" r="9" fill="url(#logoGrad)"/>
+        <path d="M 50 33 L 50 40 M 50 40 L 35 45 M 50 40 L 65 45" 
+              stroke="url(#logoGrad)" strokeWidth="2.5" strokeLinecap="round"/>
+        <path d="M 35 57 L 50 66 M 65 57 L 50 66" 
+              stroke="url(#logoGrad)" strokeWidth="2.5" strokeLinecap="round"/>
+        <circle cx="50" cy="50" r="25" stroke="url(#logoGrad)" strokeWidth="2" fill="none" opacity="0.3"/>
+      </svg>
+      <div className="flex flex-col leading-tight">
+        <span className={`font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent ${textSizeClasses[size]}`}>
+          GenoFlow
+        </span>
+        <span className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-medium -mt-1">
+          Therapeutisches Genogramm
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// Toast Notification Component
+const Toast = ({ message, type = 'success', onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+
+  return (
+    <div className={`fixed bottom-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-up`}>
+      <div className="flex items-center gap-2">
+        {type === 'success' && <Save className="w-5 h-5" />}
+        {type === 'error' && <AlertCircle className="w-5 h-5" />}
+        <span className="font-medium">{message}</span>
+      </div>
+    </div>
+  );
+};
 
 const GenogramGenerator = () => {
+  // State Management
   const [people, setPeople] = useState([]);
   const [relationships, setRelationships] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -14,6 +81,10 @@ const GenogramGenerator = () => {
   const svgRef = useRef(null);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [lastSaved, setLastSaved] = useState(null);
+
   const [formData, setFormData] = useState({
     name: '',
     age: '',
@@ -42,6 +113,115 @@ const GenogramGenerator = () => {
     quality: 'normal',
     partnershipStatus: 'married'
   });
+
+  // Load data and dark mode from localStorage on mount
+  useEffect(() => {
+    const savedPeople = localStorage.getItem('genoflow_people');
+    const savedRelationships = localStorage.getItem('genoflow_relationships');
+    const savedDarkMode = localStorage.getItem('genoflow_darkMode');
+    const savedTimestamp = localStorage.getItem('genoflow_lastSaved');
+
+    if (savedPeople) setPeople(JSON.parse(savedPeople));
+    if (savedRelationships) setRelationships(JSON.parse(savedRelationships));
+    if (savedDarkMode) setDarkMode(JSON.parse(savedDarkMode));
+    if (savedTimestamp) setLastSaved(parseInt(savedTimestamp));
+
+    // Apply dark mode class
+    if (savedDarkMode === 'true') {
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  // Auto-save functionality
+  useEffect(() => {
+    if (people.length === 0 && relationships.length === 0) return;
+
+    const autoSaveTimer = setTimeout(() => {
+      try {
+        localStorage.setItem('genoflow_people', JSON.stringify(people));
+        localStorage.setItem('genoflow_relationships', JSON.stringify(relationships));
+        const timestamp = Date.now();
+        localStorage.setItem('genoflow_lastSaved', timestamp.toString());
+        setLastSaved(timestamp);
+        setToast({ message: 'Automatisch gespeichert', type: 'success' });
+      } catch (error) {
+        console.error('Auto-save failed:', error);
+        setToast({ message: 'Speichern fehlgeschlagen', type: 'error' });
+      }
+    }, 30000); // Auto-save every 30 seconds
+
+    return () => clearTimeout(autoSaveTimer);
+  }, [people, relationships]);
+
+  // Dark Mode Toggle
+  useEffect(() => {
+    localStorage.setItem('genoflow_darkMode', darkMode);
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
+  // Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      // Cmd/Ctrl + P: Add Person
+      if ((e.metaKey || e.ctrlKey) && e.key === 'p') {
+        e.preventDefault();
+        resetForm();
+        setShowForm(true);
+        setShowRelForm(false);
+      }
+      // Cmd/Ctrl + R: Add Relationship
+      if ((e.metaKey || e.ctrlKey) && e.key === 'r' && people.length >= 2) {
+        e.preventDefault();
+        resetRelForm();
+        setShowRelForm(true);
+        setShowForm(false);
+      }
+      // Cmd/Ctrl + S: Manual Save
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        manualSave();
+      }
+      // Cmd/Ctrl + ?: Open Tutorial
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === '?') {
+        e.preventDefault();
+        setShowTutorial(true);
+      }
+      // Escape: Close forms
+      if (e.key === 'Escape') {
+        setShowForm(false);
+        setShowRelForm(false);
+        setShowTutorial(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [people.length]);
+
+  const manualSave = () => {
+    try {
+      localStorage.setItem('genoflow_people', JSON.stringify(people));
+      localStorage.setItem('genoflow_relationships', JSON.stringify(relationships));
+      const timestamp = Date.now();
+      localStorage.setItem('genoflow_lastSaved', timestamp.toString());
+      setLastSaved(timestamp);
+      setToast({ message: 'Manuell gespeichert', type: 'success' });
+    } catch (error) {
+      setToast({ message: 'Speichern fehlgeschlagen', type: 'error' });
+    }
+  };
+
+  const getTimeSinceSave = () => {
+    if (!lastSaved) return null;
+    const minutes = Math.floor((Date.now() - lastSaved) / 60000);
+    if (minutes < 1) return 'gerade eben';
+    if (minutes === 1) return 'vor 1 Minute';
+    return `vor ${minutes} Minuten`;
+  };
 
   const relationshipTypes = {
     'parent-child': {
@@ -217,6 +397,7 @@ const GenogramGenerator = () => {
       resetForm();
     }
     setShowForm(false);
+    setToast({ message: editingId ? 'Person aktualisiert' : 'Person hinzugefügt', type: 'success' });
   };
 
   const editPerson = (person) => {
@@ -231,6 +412,7 @@ const GenogramGenerator = () => {
     setRelationships(relationships.filter(r => 
       r.person1 !== id && r.person2 !== id
     ));
+    setToast({ message: 'Person gelöscht', type: 'info' });
   };
 
   const addRelationship = () => {
@@ -250,10 +432,12 @@ const GenogramGenerator = () => {
     setRelationships([...relationships, newRel]);
     resetRelForm();
     setShowRelForm(false);
+    setToast({ message: 'Beziehung hinzugefügt', type: 'success' });
   };
 
   const deleteRelationship = (id) => {
     setRelationships(relationships.filter(r => r.id !== id));
+    setToast({ message: 'Beziehung gelöscht', type: 'info' });
   };
 
   const downloadAsPNG = () => {
@@ -271,7 +455,7 @@ const GenogramGenerator = () => {
     canvas.height = svgHeight;
 
     img.onload = () => {
-      ctx.fillStyle = '#fafafa';
+      ctx.fillStyle = darkMode ? '#1f2937' : '#fafafa';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
       
@@ -282,6 +466,7 @@ const GenogramGenerator = () => {
         link.download = `genogramm_${new Date().toISOString().split('T')[0]}.png`;
         link.click();
         URL.revokeObjectURL(url);
+        setToast({ message: 'PNG heruntergeladen', type: 'success' });
       });
     };
 
@@ -300,6 +485,7 @@ const GenogramGenerator = () => {
     link.download = `genogramm_${new Date().toISOString().split('T')[0]}.svg`;
     link.click();
     URL.revokeObjectURL(url);
+    setToast({ message: 'SVG heruntergeladen', type: 'success' });
   };
 
   const getRelationshipLabel = (rel) => {
@@ -371,7 +557,8 @@ const GenogramGenerator = () => {
     const verticalSpacing = 200;
 
     return (
-      <svg ref={svgRef} width="100%" height={Math.max(500, (maxGen + 1) * 200)} style={{ border: '1px solid #ddd', background: '#fafafa' }}>
+      <svg ref={svgRef} width="100%" height={Math.max(500, (maxGen + 1) * 200)} 
+           style={{ border: '1px solid #ddd', background: darkMode ? '#1f2937' : '#fafafa' }}>
         {relationships.map(rel => {
           const p1 = people.find(p => p.id === rel.person1);
           const p2 = people.find(p => p.id === rel.person2);
@@ -453,6 +640,7 @@ const GenogramGenerator = () => {
                   textAnchor="middle" 
                   fontSize="14" 
                   fontWeight="bold"
+                  fill={darkMode ? '#fff' : '#000'}
                 >
                   {person.name}
                 </text>
@@ -463,6 +651,7 @@ const GenogramGenerator = () => {
                     y={y + 102} 
                     textAnchor="middle" 
                     fontSize="11"
+                    fill={darkMode ? '#d1d5db' : '#000'}
                   >
                     {person.age} Jahre
                   </text>
@@ -474,7 +663,7 @@ const GenogramGenerator = () => {
                     y={y + 117} 
                     textAnchor="middle" 
                     fontSize="10"
-                    fill="#555"
+                    fill={darkMode ? '#9ca3af' : '#555'}
                   >
                     {person.profession}
                   </text>
@@ -537,429 +726,471 @@ const GenogramGenerator = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-primary p-2 sm:p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white/95 backdrop-blur-sm rounded-xl md:rounded-2xl shadow-xl p-3 sm:p-4 md:p-8 mb-4 md:mb-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 mb-4 md:mb-6">
-            <div className="flex items-center gap-2 md:gap-3">
-              <Users className="w-6 h-6 md:w-8 md:h-8 text-blue-600 flex-shrink-0" />
-              <h1 className="text-lg sm:text-xl md:text-3xl font-bold text-gray-800">Therapeutisches Genogramm</h1>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setShowTutorial(true)}
-                className="flex items-center gap-1 md:gap-2 bg-white text-purple-600 border-2 border-purple-600 px-2 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-purple-50 transition text-xs md:text-base font-semibold"
-              >
-                <span className="text-base md:text-lg">📚</span>
-                <span className="hidden xs:inline">Tutorial</span>
-              </button>
-              <button
-                onClick={() => {
-                  resetForm();
-                  setShowForm(!showForm);
-                  setShowRelForm(false);
-                }}
-                className="flex items-center gap-1 md:gap-2 bg-gradient-primary text-white px-2 py-1.5 md:px-4 md:py-2 rounded-lg hover:shadow-lg transition text-xs md:text-base font-semibold"
-              >
-                {showForm ? <X className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <Plus className="w-3.5 h-3.5 md:w-5 md:h-5" />}
-                <span>{showForm ? 'Abbrechen' : 'Person'}</span>
-              </button>
-              {people.length >= 2 && (
+    <div className={`min-h-screen ${darkMode ? 'dark' : ''}`}>
+      <div className="min-h-screen bg-gradient-primary dark:bg-gradient-to-br dark:from-gray-900 dark:via-purple-900 dark:to-gray-900 p-2 sm:p-4 md:p-8 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-xl md:rounded-2xl shadow-xl p-3 sm:p-4 md:p-8 mb-4 md:mb-8 transition-colors duration-300">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 mb-4 md:mb-6">
+              <GenoFlowLogo size="default" />
+              
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Auto-save indicator */}
+                {lastSaved && (
+                  <div className="hidden md:flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mr-2">
+                    <Save className="w-3 h-3" />
+                    <span>Gespeichert {getTimeSinceSave()}</span>
+                  </div>
+                )}
+
+                {/* Dark Mode Toggle */}
+                <button
+                  onClick={() => setDarkMode(!darkMode)}
+                  className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-1.5 md:px-3 md:py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                  title="Dark Mode (Strg+D)"
+                >
+                  {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                </button>
+
+                <button
+                  onClick={() => setShowTutorial(true)}
+                  className="flex items-center gap-1 md:gap-2 bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 border-2 border-purple-600 dark:border-purple-400 px-2 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-purple-50 dark:hover:bg-gray-600 transition text-xs md:text-base font-semibold"
+                  title="Tutorial öffnen (Strg+Shift+?)"
+                >
+                  <span className="text-base md:text-lg">📚</span>
+                  <span className="hidden xs:inline">Tutorial</span>
+                </button>
+                
                 <button
                   onClick={() => {
-                    resetRelForm();
-                    setShowRelForm(!showRelForm);
-                    setShowForm(false);
+                    resetForm();
+                    setShowForm(!showForm);
+                    setShowRelForm(false);
                   }}
-                  className="flex items-center gap-1 md:gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-2 py-1.5 md:px-4 md:py-2 rounded-lg hover:shadow-lg transition text-xs md:text-base font-semibold"
+                  className="flex items-center gap-1 md:gap-2 bg-gradient-primary text-white px-2 py-1.5 md:px-4 md:py-2 rounded-lg hover:shadow-lg transition text-xs md:text-base font-semibold"
+                  title="Person hinzufügen (Strg+P)"
                 >
-                  {showRelForm ? <X className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <Heart className="w-3.5 h-3.5 md:w-5 md:h-5" />}
-                  <span>{showRelForm ? 'Abbrechen' : 'Beziehung'}</span>
+                  {showForm ? <X className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <Plus className="w-3.5 h-3.5 md:w-5 md:h-5" />}
+                  <span>{showForm ? 'Abbrechen' : 'Person'}</span>
                 </button>
-              )}
-            </div>
-          </div>
-
-          {showForm && (
-            <div className="bg-gray-50 p-3 sm:p-4 md:p-6 rounded-lg mb-4 md:mb-6">
-              <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">
-                {editingId ? 'Person bearbeiten' : 'Neue Person hinzufügen'}
-              </h3>
-              
-              <div className="mb-3 md:mb-4">
-                <h4 className="font-medium text-gray-700 mb-2 text-sm md:text-base">Grunddaten</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
-                  <input
-                    type="text"
-                    placeholder="Name *"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Alter"
-                    value={formData.age}
-                    onChange={(e) => setFormData({...formData, age: e.target.value})}
-                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                  />
-                  <select
-                    value={formData.gender}
-                    onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                  >
-                    <option value="male">Männlich</option>
-                    <option value="female">Weiblich</option>
-                    <option value="other">Divers</option>
-                  </select>
-                  <input
-                    type="number"
-                    placeholder="Geburtsjahr"
-                    value={formData.birthYear}
-                    onChange={(e) => setFormData({...formData, birthYear: e.target.value})}
-                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                  />
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({...formData, status: e.target.value})}
-                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                  >
-                    <option value="alive">Lebend</option>
-                    <option value="deceased">Verstorben</option>
-                  </select>
-                  {formData.status === 'deceased' && (
-                    <>
-                      <input
-                        type="number"
-                        placeholder="Sterbejahr"
-                        value={formData.deathYear}
-                        onChange={(e) => setFormData({...formData, deathYear: e.target.value})}
-                        className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Todesursache"
-                        value={formData.causeOfDeath}
-                        onChange={(e) => setFormData({...formData, causeOfDeath: e.target.value})}
-                        className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 col-span-1 sm:col-span-2 text-sm md:text-base"
-                      />
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <div className="mb-3 md:mb-4">
-                <h4 className="font-medium text-gray-700 mb-2 text-sm md:text-base">Soziale Informationen</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
-                  <input
-                    type="text"
-                    placeholder="Beruf"
-                    value={formData.profession}
-                    onChange={(e) => setFormData({...formData, profession: e.target.value})}
-                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                  />
-                  <select
-                    value={formData.education}
-                    onChange={(e) => setFormData({...formData, education: e.target.value})}
-                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                  >
-                    <option value="">Schulabschluss</option>
-                    <option value="Hauptschule">Hauptschule</option>
-                    <option value="Realschule">Realschule</option>
-                    <option value="Abitur">Abitur</option>
-                    <option value="Studium">Studium</option>
-                    <option value="Promotion">Promotion</option>
-                  </select>
-                  <select
-                    value={formData.maritalStatus}
-                    onChange={(e) => setFormData({...formData, maritalStatus: e.target.value})}
-                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                  >
-                    <option value="single">Ledig</option>
-                    <option value="married">Verheiratet</option>
-                    <option value="divorced">Geschieden</option>
-                    <option value="widowed">Verwitwet</option>
-                    <option value="partnership">Partnerschaft</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="mb-3 md:mb-4">
-                <h4 className="font-medium text-gray-700 mb-2 text-sm md:text-base">Medizinische & Psychologische Informationen</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
-                  <input
-                    type="text"
-                    placeholder="Diagnosen"
-                    value={formData.diagnoses}
-                    onChange={(e) => setFormData({...formData, diagnoses: e.target.value})}
-                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Operationen/med. Eingriffe"
-                    value={formData.surgeries}
-                    onChange={(e) => setFormData({...formData, surgeries: e.target.value})}
-                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Abhängigkeiten"
-                    value={formData.addictions}
-                    onChange={(e) => setFormData({...formData, addictions: e.target.value})}
-                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Psychische Gesundheit"
-                    value={formData.mentalHealth}
-                    onChange={(e) => setFormData({...formData, mentalHealth: e.target.value})}
-                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                  />
-                </div>
-              </div>
-
-              <div className="mb-3 md:mb-4">
-                <h4 className="font-medium text-gray-700 mb-2 text-sm md:text-base">Persönlichkeit & Besonderheiten</h4>
-                <div className="grid grid-cols-1 gap-2 md:gap-3">
-                  <input
-                    type="text"
-                    placeholder="Persönlichkeitsmerkmale"
-                    value={formData.personality}
-                    onChange={(e) => setFormData({...formData, personality: e.target.value})}
-                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                  />
-                  <textarea
-                    placeholder="Notizen & Signalstichpunkte"
-                    value={formData.notes}
-                    onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 h-16 md:h-20 text-sm md:text-base"
-                  />
-                </div>
-              </div>
-
-              <div className="mb-3 md:mb-4">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.isPatient}
-                    onChange={(e) => setFormData({...formData, isPatient: e.target.checked})}
-                    className="w-4 h-4"
-                  />
-                  <span className="font-medium text-gray-700 text-sm md:text-base">Als Patient markieren</span>
-                </label>
-              </div>
-
-              <button
-                onClick={addPerson}
-                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 md:px-6 md:py-2 rounded hover:bg-green-700 transition text-sm md:text-base w-full sm:w-auto justify-center"
-              >
-                <Save className="w-4 h-4 md:w-5 md:h-5" />
-                {editingId ? 'Änderungen speichern' : 'Person speichern'}
-              </button>
-            </div>
-          )}
-
-          {showRelForm && (
-            <div className="bg-purple-50 p-3 sm:p-4 md:p-6 rounded-lg mb-4 md:mb-6">
-              <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Neue Beziehung hinzufügen</h3>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-3 md:mb-4">
-                <div>
-                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Person 1</label>
-                  <select
-                    value={relFormData.person1}
-                    onChange={(e) => setRelFormData({...relFormData, person1: e.target.value})}
-                    className="w-full border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                  >
-                    <option value="">Wählen...</option>
-                    {people.map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Person 2</label>
-                  <select
-                    value={relFormData.person2}
-                    onChange={(e) => setRelFormData({...relFormData, person2: e.target.value})}
-                    className="w-full border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                  >
-                    <option value="">Wählen...</option>
-                    {people.map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Beziehungstyp</label>
-                  <select
-                    value={relFormData.type}
-                    onChange={(e) => {
-                      const newType = e.target.value;
-                      const firstSubtype = Object.keys(relationshipTypes[newType].subtypes)[0];
-                      setRelFormData({...relFormData, type: newType, subtype: firstSubtype});
+                
+                {people.length >= 2 && (
+                  <button
+                    onClick={() => {
+                      resetRelForm();
+                      setShowRelForm(!showRelForm);
+                      setShowForm(false);
                     }}
-                    className="w-full border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    className="flex items-center gap-1 md:gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-2 py-1.5 md:px-4 md:py-2 rounded-lg hover:shadow-lg transition text-xs md:text-base font-semibold"
+                    title="Beziehung hinzufügen (Strg+R)"
                   >
-                    {Object.entries(relationshipTypes).map(([key, value]) => (
-                      <option key={key} value={key}>{value.label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Spezifische Beziehung</label>
-                  <select
-                    value={relFormData.subtype}
-                    onChange={(e) => setRelFormData({...relFormData, subtype: e.target.value})}
-                    className="w-full border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                  >
-                    {Object.entries(relationshipTypes[relFormData.type].subtypes).map(([key, label]) => (
-                      <option key={key} value={key}>{label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Beziehungsqualität</label>
-                  <select
-                    value={relFormData.quality}
-                    onChange={(e) => setRelFormData({...relFormData, quality: e.target.value})}
-                    className="w-full border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
-                  >
-                    {Object.entries(relationshipQualities).map(([key, data]) => (
-                      <option key={key} value={key}>{data.label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <button
-                onClick={addRelationship}
-                className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 md:px-6 md:py-2 rounded hover:bg-purple-700 transition text-sm md:text-base w-full sm:w-auto justify-center"
-              >
-                <Plus className="w-4 h-4 md:w-5 md:h-5" />
-                Beziehung hinzufügen
-              </button>
-            </div>
-          )}
-
-          {/* Mobile Stats Toggle Button */}
-          {people.length > 0 && (
-            <button
-              onClick={() => setShowMobileSidebar(!showMobileSidebar)}
-              className="lg:hidden w-full bg-gradient-to-r from-teal-500 to-blue-500 text-white px-4 py-3 rounded-xl mb-4 flex items-center justify-between hover:shadow-lg transition"
-            >
-              <span className="font-semibold flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Personen & Statistiken ({people.length})
-              </span>
-              {showMobileSidebar ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-            </button>
-          )}
-
-          {/* Mobile Sidebar Dropdown */}
-          {showMobileSidebar && (
-            <div className="lg:hidden space-y-4 mb-6 animate-fade-in">
-              <StatsCard people={people} relationships={relationships} />
-              <PeopleList people={people} onEdit={editPerson} onDelete={deletePerson} />
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
-            {/* Desktop Sidebar */}
-            <div className="hidden lg:block space-y-6">
-              <StatsCard people={people} relationships={relationships} />
-              <PeopleList people={people} onEdit={editPerson} onDelete={deletePerson} />
-            </div>
-            
-            <div className="lg:col-span-2 space-y-4 md:space-y-6">
-              {relationships.length > 0 && (
-                <div className="mb-4 md:mb-6">
-                  <h2 className="text-lg md:text-xl font-semibold mb-2 md:mb-3">Erfasste Beziehungen ({relationships.length})</h2>
-                  <div className="space-y-2">
-                    {relationships.map(rel => (
-                      <div key={rel.id} className="bg-gradient-to-br from-purple-50 to-pink-50 p-3 md:p-4 rounded-xl flex items-center justify-between hover:shadow-md transition-all">
-                        <div className="flex-1 min-w-0 pr-2">
-                          <span className="font-medium text-sm md:text-base block truncate">{getRelationshipLabel(rel)}</span>
-                          <span className="text-xs md:text-sm text-gray-600">
-                            ({relationshipQualities[rel.quality]?.label})
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => deleteRelationship(rel.id)}
-                          className="text-red-600 hover:text-red-800 flex-shrink-0"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="bg-white/95 backdrop-blur-sm rounded-xl md:rounded-2xl shadow-xl p-3 sm:p-4 md:p-8 card-hover">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                  <h2 className="text-lg md:text-2xl font-bold text-gray-800">Genogramm-Visualisierung</h2>
-                  {people.length > 0 && (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={downloadAsPNG}
-                        className="flex items-center gap-1 md:gap-2 bg-green-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-green-700 transition text-xs md:text-base"
-                      >
-                        <Download className="w-4 h-4 md:w-5 md:h-5" />
-                        <span className="hidden sm:inline">PNG</span>
-                      </button>
-                      <button
-                        onClick={downloadAsSVG}
-                        className="flex items-center gap-1 md:gap-2 bg-blue-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-blue-700 transition text-xs md:text-base"
-                      >
-                        <Download className="w-4 h-4 md:w-5 md:h-5" />
-                        <span className="hidden sm:inline">SVG</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <div className="mb-4 p-2 md:p-3 bg-blue-50 rounded text-xs md:text-sm space-y-1">
-                  <div><strong>Legende - Personen:</strong></div>
-                  <div>• Quadrat = Männlich, Kreis = Weiblich</div>
-                  <div>• Grau mit Kreuzlinie = Verstorben</div>
-                  <div>• Orange Rahmen = Patient/in</div>
-                  <div className="mt-2"><strong>Legende - Beziehungen:</strong></div>
-                  <div>• <span style={{color: '#27ae60'}}>Dicke grüne Linie</span> = Enge/Nahe Beziehung</div>
-                  <div>• <span style={{color: '#27ae60'}}>Doppelte grüne Linien</span> = Sehr eng/Fusioniert</div>
-                  <div>• <span style={{color: '#e74c3c'}}>Rote Zick-Zack-Linie</span> = Konfliktreich</div>
-                  <div>• <span style={{color: '#e67e22'}}>Orange Wellenlinie</span> = Angespannt</div>
-                  <div>• <span style={{color: '#95a5a6'}}>Gestrichelte graue Linie</span> = Distanzierte Beziehung</div>
-                  <div>• <span style={{color: '#c0392b'}}>Durchgestrichene Linie</span> = Abgebrochene Beziehung</div>
-                  <div>• <span style={{color: '#34495e'}}>Doppelt durchgestrichen</span> = Kontaktabbruch</div>
-                  <div>• <span style={{color: '#9b59b6'}}>Strich-Punkt lila</span> = Ambivalente Beziehung</div>
-                </div>
-                {people.length === 0 ? (
-                  <div className="text-center text-gray-500 py-8 md:py-12 text-sm md:text-base">
-                    Fügen Sie Personen und Beziehungen hinzu, um das Genogramm zu erstellen
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
-                    <div className="min-w-max px-3 sm:px-4 md:px-0">
-                      {renderGenogram()}
-                    </div>
-                  </div>
+                    {showRelForm ? <X className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <Heart className="w-3.5 h-3.5 md:w-5 md:h-5" />}
+                    <span>{showRelForm ? 'Abbrechen' : 'Beziehung'}</span>
+                  </button>
                 )}
               </div>
             </div>
-          </div>
 
-          <TutorialModal 
-            isOpen={showTutorial} 
-            onClose={() => setShowTutorial(false)} 
-          />
-          
-          <BugReportButton />
+            {/* Keyboard Shortcuts Info */}
+            <div className="mb-4 p-2 bg-blue-50 dark:bg-blue-900/30 rounded text-xs flex flex-wrap gap-x-4 gap-y-1 text-gray-600 dark:text-gray-300">
+              <span>⌨️ Shortcuts:</span>
+              <span><kbd className="px-1 bg-white dark:bg-gray-700 rounded">Strg+P</kbd> Person</span>
+              <span><kbd className="px-1 bg-white dark:bg-gray-700 rounded">Strg+R</kbd> Beziehung</span>
+              <span><kbd className="px-1 bg-white dark:bg-gray-700 rounded">Strg+S</kbd> Speichern</span>
+              <span><kbd className="px-1 bg-white dark:bg-gray-700 rounded">Esc</kbd> Schließen</span>
+            </div>
+
+            {showForm && (
+              <div className="bg-gray-50 dark:bg-gray-700/50 p-3 sm:p-4 md:p-6 rounded-lg mb-4 md:mb-6">
+                <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4 dark:text-white">
+                  {editingId ? 'Person bearbeiten' : 'Neue Person hinzufügen'}
+                </h3>
+                
+                <div className="mb-3 md:mb-4">
+                  <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2 text-sm md:text-base">Grunddaten</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
+                    <input
+                      type="text"
+                      placeholder="Name *"
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Alter"
+                      value={formData.age}
+                      onChange={(e) => setFormData({...formData, age: e.target.value})}
+                      className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    />
+                    <select
+                      value={formData.gender}
+                      onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                      className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    >
+                      <option value="male">Männlich</option>
+                      <option value="female">Weiblich</option>
+                      <option value="other">Divers</option>
+                    </select>
+                    <input
+                      type="number"
+                      placeholder="Geburtsjahr"
+                      value={formData.birthYear}
+                      onChange={(e) => setFormData({...formData, birthYear: e.target.value})}
+                      className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    />
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({...formData, status: e.target.value})}
+                      className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    >
+                      <option value="alive">Lebend</option>
+                      <option value="deceased">Verstorben</option>
+                    </select>
+                    {formData.status === 'deceased' && (
+                      <>
+                        <input
+                          type="number"
+                          placeholder="Sterbejahr"
+                          value={formData.deathYear}
+                          onChange={(e) => setFormData({...formData, deathYear: e.target.value})}
+                          className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Todesursache"
+                          value={formData.causeOfDeath}
+                          onChange={(e) => setFormData({...formData, causeOfDeath: e.target.value})}
+                          className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 col-span-1 sm:col-span-2 text-sm md:text-base"
+                        />
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mb-3 md:mb-4">
+                  <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2 text-sm md:text-base">Soziale Informationen</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
+                    <input
+                      type="text"
+                      placeholder="Beruf"
+                      value={formData.profession}
+                      onChange={(e) => setFormData({...formData, profession: e.target.value})}
+                      className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    />
+                    <select
+                      value={formData.education}
+                      onChange={(e) => setFormData({...formData, education: e.target.value})}
+                      className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    >
+                      <option value="">Schulabschluss</option>
+                      <option value="Hauptschule">Hauptschule</option>
+                      <option value="Realschule">Realschule</option>
+                      <option value="Abitur">Abitur</option>
+                      <option value="Studium">Studium</option>
+                      <option value="Promotion">Promotion</option>
+                    </select>
+                    <select
+                      value={formData.maritalStatus}
+                      onChange={(e) => setFormData({...formData, maritalStatus: e.target.value})}
+                      className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    >
+                      <option value="single">Ledig</option>
+                      <option value="married">Verheiratet</option>
+                      <option value="divorced">Geschieden</option>
+                      <option value="widowed">Verwitwet</option>
+                      <option value="partnership">Partnerschaft</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mb-3 md:mb-4">
+                  <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2 text-sm md:text-base">Medizinische & Psychologische Informationen</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
+                    <input
+                      type="text"
+                      placeholder="Diagnosen"
+                      value={formData.diagnoses}
+                      onChange={(e) => setFormData({...formData, diagnoses: e.target.value})}
+                      className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Operationen/med. Eingriffe"
+                      value={formData.surgeries}
+                      onChange={(e) => setFormData({...formData, surgeries: e.target.value})}
+                      className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Abhängigkeiten"
+                      value={formData.addictions}
+                      onChange={(e) => setFormData({...formData, addictions: e.target.value})}
+                      className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Psychische Gesundheit"
+                      value={formData.mentalHealth}
+                      onChange={(e) => setFormData({...formData, mentalHealth: e.target.value})}
+                      className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-3 md:mb-4">
+                  <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2 text-sm md:text-base">Persönlichkeit & Besonderheiten</h4>
+                  <div className="grid grid-cols-1 gap-2 md:gap-3">
+                    <input
+                      type="text"
+                      placeholder="Persönlichkeitsmerkmale"
+                      value={formData.personality}
+                      onChange={(e) => setFormData({...formData, personality: e.target.value})}
+                      className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    />
+                    <textarea
+                      placeholder="Notizen & Signalstichpunkte"
+                      value={formData.notes}
+                      onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                      className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 h-16 md:h-20 text-sm md:text-base"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-3 md:mb-4">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.isPatient}
+                      onChange={(e) => setFormData({...formData, isPatient: e.target.checked})}
+                      className="w-4 h-4"
+                    />
+                    <span className="font-medium text-gray-700 dark:text-gray-300 text-sm md:text-base">Als Patient markieren</span>
+                  </label>
+                </div>
+
+                <button
+                  onClick={addPerson}
+                  className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 md:px-6 md:py-2 rounded hover:bg-green-700 transition text-sm md:text-base w-full sm:w-auto justify-center"
+                >
+                  <Save className="w-4 h-4 md:w-5 md:h-5" />
+                  {editingId ? 'Änderungen speichern' : 'Person speichern'}
+                </button>
+              </div>
+            )}
+
+            {showRelForm && (
+              <div className="bg-purple-50 dark:bg-purple-900/30 p-3 sm:p-4 md:p-6 rounded-lg mb-4 md:mb-6">
+                <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4 dark:text-white">Neue Beziehung hinzufügen</h3>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-3 md:mb-4">
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Person 1</label>
+                    <select
+                      value={relFormData.person1}
+                      onChange={(e) => setRelFormData({...relFormData, person1: e.target.value})}
+                      className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    >
+                      <option value="">Wählen...</option>
+                      {people.map(p => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Person 2</label>
+                    <select
+                      value={relFormData.person2}
+                      onChange={(e) => setRelFormData({...relFormData, person2: e.target.value})}
+                      className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    >
+                      <option value="">Wählen...</option>
+                      {people.map(p => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Beziehungstyp</label>
+                    <select
+                      value={relFormData.type}
+                      onChange={(e) => {
+                        const newType = e.target.value;
+                        const firstSubtype = Object.keys(relationshipTypes[newType].subtypes)[0];
+                        setRelFormData({...relFormData, type: newType, subtype: firstSubtype});
+                      }}
+                      className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    >
+                      {Object.entries(relationshipTypes).map(([key, value]) => (
+                        <option key={key} value={key}>{value.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Spezifische Beziehung</label>
+                    <select
+                      value={relFormData.subtype}
+                      onChange={(e) => setRelFormData({...relFormData, subtype: e.target.value})}
+                      className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    >
+                      {Object.entries(relationshipTypes[relFormData.type].subtypes).map(([key, label]) => (
+                        <option key={key} value={key}>{label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Beziehungsqualität</label>
+                    <select
+                      value={relFormData.quality}
+                      onChange={(e) => setRelFormData({...relFormData, quality: e.target.value})}
+                      className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
+                    >
+                      {Object.entries(relationshipQualities).map(([key, data]) => (
+                        <option key={key} value={key}>{data.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  onClick={addRelationship}
+                  className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 md:px-6 md:py-2 rounded hover:bg-purple-700 transition text-sm md:text-base w-full sm:w-auto justify-center"
+                >
+                  <Plus className="w-4 h-4 md:w-5 md:h-5" />
+                  Beziehung hinzufügen
+                </button>
+              </div>
+            )}
+
+            {/* Mobile Stats Toggle Button */}
+            {people.length > 0 && (
+              <button
+                onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+                className="lg:hidden w-full bg-gradient-to-r from-teal-500 to-blue-500 text-white px-4 py-3 rounded-xl mb-4 flex items-center justify-between hover:shadow-lg transition"
+              >
+                <span className="font-semibold flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Personen & Statistiken ({people.length})
+                </span>
+                {showMobileSidebar ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              </button>
+            )}
+
+            {/* Mobile Sidebar Dropdown */}
+            {showMobileSidebar && (
+              <div className="lg:hidden space-y-4 mb-6 animate-fade-in">
+                <StatsCard people={people} relationships={relationships} />
+                <PeopleList people={people} onEdit={editPerson} onDelete={deletePerson} />
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+              {/* Desktop Sidebar */}
+              <div className="hidden lg:block space-y-6">
+                <StatsCard people={people} relationships={relationships} />
+                <PeopleList people={people} onEdit={editPerson} onDelete={deletePerson} />
+              </div>
+              
+              <div className="lg:col-span-2 space-y-4 md:space-y-6">
+                {relationships.length > 0 && (
+                  <div className="mb-4 md:mb-6">
+                    <h2 className="text-lg md:text-xl font-semibold mb-2 md:mb-3 dark:text-white">Erfasste Beziehungen ({relationships.length})</h2>
+                    <div className="space-y-2">
+                      {relationships.map(rel => (
+                        <div key={rel.id} className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 p-3 md:p-4 rounded-xl flex items-center justify-between hover:shadow-md transition-all">
+                          <div className="flex-1 min-w-0 pr-2">
+                            <span className="font-medium text-sm md:text-base block truncate dark:text-white">{getRelationshipLabel(rel)}</span>
+                            <span className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                              ({relationshipQualities[rel.quality]?.label})
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => deleteRelationship(rel.id)}
+                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 flex-shrink-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-xl md:rounded-2xl shadow-xl p-3 sm:p-4 md:p-8 card-hover transition-colors duration-300">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <h2 className="text-lg md:text-2xl font-bold text-gray-800 dark:text-white">Genogramm-Visualisierung</h2>
+                    {people.length > 0 && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={downloadAsPNG}
+                          className="flex items-center gap-1 md:gap-2 bg-green-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-green-700 transition text-xs md:text-base"
+                        >
+                          <Download className="w-4 h-4 md:w-5 md:h-5" />
+                          <span className="hidden sm:inline">PNG</span>
+                        </button>
+                        <button
+                          onClick={downloadAsSVG}
+                          className="flex items-center gap-1 md:gap-2 bg-blue-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-blue-700 transition text-xs md:text-base"
+                        >
+                          <Download className="w-4 h-4 md:w-5 md:h-5" />
+                          <span className="hidden sm:inline">SVG</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mb-4 p-2 md:p-3 bg-blue-50 dark:bg-blue-900/30 rounded text-xs md:text-sm space-y-1 dark:text-gray-300">
+                    <div><strong>Legende - Personen:</strong></div>
+                    <div>• Quadrat = Männlich, Kreis = Weiblich</div>
+                    <div>• Grau mit Kreuzlinie = Verstorben</div>
+                    <div>• Orange Rahmen = Patient/in</div>
+                    <div className="mt-2"><strong>Legende - Beziehungen:</strong></div>
+                    <div>• <span style={{color: '#27ae60'}}>Dicke grüne Linie</span> = Enge/Nahe Beziehung</div>
+                    <div>• <span style={{color: '#27ae60'}}>Doppelte grüne Linien</span> = Sehr eng/Fusioniert</div>
+                    <div>• <span style={{color: '#e74c3c'}}>Rote Zick-Zack-Linie</span> = Konfliktreich</div>
+                    <div>• <span style={{color: '#e67e22'}}>Orange Wellenlinie</span> = Angespannt</div>
+                    <div>• <span style={{color: '#95a5a6'}}>Gestrichelte graue Linie</span> = Distanzierte Beziehung</div>
+                    <div>• <span style={{color: '#c0392b'}}>Durchgestrichene Linie</span> = Abgebrochene Beziehung</div>
+                    <div>• <span style={{color: '#34495e'}}>Doppelt durchgestrichen</span> = Kontaktabbruch</div>
+                    <div>• <span style={{color: '#9b59b6'}}>Strich-Punkt lila</span> = Ambivalente Beziehung</div>
+                  </div>
+                  {people.length === 0 ? (
+                    <div className="text-center text-gray-500 dark:text-gray-400 py-8 md:py-12 text-sm md:text-base">
+                      Fügen Sie Personen und Beziehungen hinzu, um das Genogramm zu erstellen
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
+                      <div className="min-w-max px-3 sm:px-4 md:px-0">
+                        {renderGenogram()}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <TutorialModal 
+              isOpen={showTutorial} 
+              onClose={() => setShowTutorial(false)} 
+            />
+            
+            <BugReportButton />
+          </div>
         </div>
+        
+        <Footer />
       </div>
+
+      {/* Toast Notifications */}
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 };
