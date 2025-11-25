@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Users, Plus, Trash2, Edit2, Save, X, Heart, AlertCircle, Download } from 'lucide-react';
+import { Users, Plus, Trash2, Edit2, Save, X, Heart, AlertCircle, Download, ChevronDown, ChevronUp } from 'lucide-react';
 import BugReportButton from './components/BugReportButton';
 import StatsCard from './components/StatsCard';
 import PeopleList from './components/PeopleList';
@@ -13,6 +13,7 @@ const GenogramGenerator = () => {
   const [editingId, setEditingId] = useState(null);
   const svgRef = useRef(null);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     age: '',
@@ -222,6 +223,7 @@ const GenogramGenerator = () => {
     setFormData(person);
     setEditingId(person.id);
     setShowForm(true);
+    setShowMobileSidebar(false);
   };
 
   const deletePerson = (id) => {
@@ -535,21 +537,21 @@ const GenogramGenerator = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-primary p-8">
+    <div className="min-h-screen bg-gradient-primary p-2 sm:p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <Users className="w-8 h-8 text-blue-600" />
-              <h1 className="text-3xl font-bold text-gray-800">Therapeutisches Genogramm</h1>
+        <div className="bg-white/95 backdrop-blur-sm rounded-xl md:rounded-2xl shadow-xl p-3 sm:p-4 md:p-8 mb-4 md:mb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 mb-4 md:mb-6">
+            <div className="flex items-center gap-2 md:gap-3">
+              <Users className="w-6 h-6 md:w-8 md:h-8 text-blue-600 flex-shrink-0" />
+              <h1 className="text-lg sm:text-xl md:text-3xl font-bold text-gray-800">Therapeutisches Genogramm</h1>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setShowTutorial(true)}
-                className="flex items-center gap-2 bg-white text-purple-600 border-2 border-purple-600 btn-modern"
+                className="flex items-center gap-1 md:gap-2 bg-white text-purple-600 border-2 border-purple-600 px-2 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-purple-50 transition text-xs md:text-base font-semibold"
               >
-                <span>📚</span>
-                Tutorial
+                <span className="text-base md:text-lg">📚</span>
+                <span className="hidden xs:inline">Tutorial</span>
               </button>
               <button
                 onClick={() => {
@@ -557,10 +559,10 @@ const GenogramGenerator = () => {
                   setShowForm(!showForm);
                   setShowRelForm(false);
                 }}
-                className="flex items-center gap-2 bg-gradient-primary text-white btn-modern"
+                className="flex items-center gap-1 md:gap-2 bg-gradient-primary text-white px-2 py-1.5 md:px-4 md:py-2 rounded-lg hover:shadow-lg transition text-xs md:text-base font-semibold"
               >
-                {showForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                {showForm ? 'Abbrechen' : 'Person hinzufügen'}
+                {showForm ? <X className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <Plus className="w-3.5 h-3.5 md:w-5 md:h-5" />}
+                <span>{showForm ? 'Abbrechen' : 'Person'}</span>
               </button>
               {people.length >= 2 && (
                 <button
@@ -569,42 +571,42 @@ const GenogramGenerator = () => {
                     setShowRelForm(!showRelForm);
                     setShowForm(false);
                   }}
-                  className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white btn-modern"
+                  className="flex items-center gap-1 md:gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-2 py-1.5 md:px-4 md:py-2 rounded-lg hover:shadow-lg transition text-xs md:text-base font-semibold"
                 >
-                  {showRelForm ? <X className="w-5 h-5" /> : <Heart className="w-5 h-5" />}
-                  {showRelForm ? 'Abbrechen' : 'Beziehung hinzufügen'}
+                  {showRelForm ? <X className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <Heart className="w-3.5 h-3.5 md:w-5 md:h-5" />}
+                  <span>{showRelForm ? 'Abbrechen' : 'Beziehung'}</span>
                 </button>
               )}
             </div>
           </div>
 
           {showForm && (
-            <div className="bg-gray-50 p-6 rounded-lg mb-6">
-              <h3 className="text-lg font-semibold mb-4">
+            <div className="bg-gray-50 p-3 sm:p-4 md:p-6 rounded-lg mb-4 md:mb-6">
+              <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">
                 {editingId ? 'Person bearbeiten' : 'Neue Person hinzufügen'}
               </h3>
               
-              <div className="mb-4">
-                <h4 className="font-medium text-gray-700 mb-2">Grunddaten</h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="mb-3 md:mb-4">
+                <h4 className="font-medium text-gray-700 mb-2 text-sm md:text-base">Grunddaten</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
                   <input
                     type="text"
                     placeholder="Name *"
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="border border-gray-300 rounded px-3 py-2"
+                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   />
                   <input
                     type="number"
                     placeholder="Alter"
                     value={formData.age}
                     onChange={(e) => setFormData({...formData, age: e.target.value})}
-                    className="border border-gray-300 rounded px-3 py-2"
+                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   />
                   <select
                     value={formData.gender}
                     onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                    className="border border-gray-300 rounded px-3 py-2"
+                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   >
                     <option value="male">Männlich</option>
                     <option value="female">Weiblich</option>
@@ -615,12 +617,12 @@ const GenogramGenerator = () => {
                     placeholder="Geburtsjahr"
                     value={formData.birthYear}
                     onChange={(e) => setFormData({...formData, birthYear: e.target.value})}
-                    className="border border-gray-300 rounded px-3 py-2"
+                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   />
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({...formData, status: e.target.value})}
-                    className="border border-gray-300 rounded px-3 py-2"
+                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   >
                     <option value="alive">Lebend</option>
                     <option value="deceased">Verstorben</option>
@@ -632,34 +634,34 @@ const GenogramGenerator = () => {
                         placeholder="Sterbejahr"
                         value={formData.deathYear}
                         onChange={(e) => setFormData({...formData, deathYear: e.target.value})}
-                        className="border border-gray-300 rounded px-3 py-2"
+                        className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                       />
                       <input
                         type="text"
                         placeholder="Todesursache"
                         value={formData.causeOfDeath}
                         onChange={(e) => setFormData({...formData, causeOfDeath: e.target.value})}
-                        className="border border-gray-300 rounded px-3 py-2 col-span-2"
+                        className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 col-span-1 sm:col-span-2 text-sm md:text-base"
                       />
                     </>
                   )}
                 </div>
               </div>
 
-              <div className="mb-4">
-                <h4 className="font-medium text-gray-700 mb-2">Soziale Informationen</h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="mb-3 md:mb-4">
+                <h4 className="font-medium text-gray-700 mb-2 text-sm md:text-base">Soziale Informationen</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
                   <input
                     type="text"
                     placeholder="Beruf"
                     value={formData.profession}
                     onChange={(e) => setFormData({...formData, profession: e.target.value})}
-                    className="border border-gray-300 rounded px-3 py-2"
+                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   />
                   <select
                     value={formData.education}
                     onChange={(e) => setFormData({...formData, education: e.target.value})}
-                    className="border border-gray-300 rounded px-3 py-2"
+                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   >
                     <option value="">Schulabschluss</option>
                     <option value="Hauptschule">Hauptschule</option>
@@ -671,7 +673,7 @@ const GenogramGenerator = () => {
                   <select
                     value={formData.maritalStatus}
                     onChange={(e) => setFormData({...formData, maritalStatus: e.target.value})}
-                    className="border border-gray-300 rounded px-3 py-2"
+                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   >
                     <option value="single">Ledig</option>
                     <option value="married">Verheiratet</option>
@@ -682,60 +684,60 @@ const GenogramGenerator = () => {
                 </div>
               </div>
 
-              <div className="mb-4">
-                <h4 className="font-medium text-gray-700 mb-2">Medizinische & Psychologische Informationen</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="mb-3 md:mb-4">
+                <h4 className="font-medium text-gray-700 mb-2 text-sm md:text-base">Medizinische & Psychologische Informationen</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
                   <input
                     type="text"
                     placeholder="Diagnosen"
                     value={formData.diagnoses}
                     onChange={(e) => setFormData({...formData, diagnoses: e.target.value})}
-                    className="border border-gray-300 rounded px-3 py-2"
+                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   />
                   <input
                     type="text"
                     placeholder="Operationen/med. Eingriffe"
                     value={formData.surgeries}
                     onChange={(e) => setFormData({...formData, surgeries: e.target.value})}
-                    className="border border-gray-300 rounded px-3 py-2"
+                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   />
                   <input
                     type="text"
                     placeholder="Abhängigkeiten"
                     value={formData.addictions}
                     onChange={(e) => setFormData({...formData, addictions: e.target.value})}
-                    className="border border-gray-300 rounded px-3 py-2"
+                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   />
                   <input
                     type="text"
                     placeholder="Psychische Gesundheit"
                     value={formData.mentalHealth}
                     onChange={(e) => setFormData({...formData, mentalHealth: e.target.value})}
-                    className="border border-gray-300 rounded px-3 py-2"
+                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   />
                 </div>
               </div>
 
-              <div className="mb-4">
-                <h4 className="font-medium text-gray-700 mb-2">Persönlichkeit & Besonderheiten</h4>
-                <div className="grid grid-cols-1 gap-3">
+              <div className="mb-3 md:mb-4">
+                <h4 className="font-medium text-gray-700 mb-2 text-sm md:text-base">Persönlichkeit & Besonderheiten</h4>
+                <div className="grid grid-cols-1 gap-2 md:gap-3">
                   <input
                     type="text"
                     placeholder="Persönlichkeitsmerkmale"
                     value={formData.personality}
                     onChange={(e) => setFormData({...formData, personality: e.target.value})}
-                    className="border border-gray-300 rounded px-3 py-2"
+                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   />
                   <textarea
                     placeholder="Notizen & Signalstichpunkte"
                     value={formData.notes}
                     onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                    className="border border-gray-300 rounded px-3 py-2 h-20"
+                    className="border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 h-16 md:h-20 text-sm md:text-base"
                   />
                 </div>
               </div>
 
-              <div className="mb-4">
+              <div className="mb-3 md:mb-4">
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
@@ -743,31 +745,31 @@ const GenogramGenerator = () => {
                     onChange={(e) => setFormData({...formData, isPatient: e.target.checked})}
                     className="w-4 h-4"
                   />
-                  <span className="font-medium text-gray-700">Als Patient markieren</span>
+                  <span className="font-medium text-gray-700 text-sm md:text-base">Als Patient markieren</span>
                 </label>
               </div>
 
               <button
                 onClick={addPerson}
-                className="flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition"
+                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 md:px-6 md:py-2 rounded hover:bg-green-700 transition text-sm md:text-base w-full sm:w-auto justify-center"
               >
-                <Save className="w-5 h-5" />
+                <Save className="w-4 h-4 md:w-5 md:h-5" />
                 {editingId ? 'Änderungen speichern' : 'Person speichern'}
               </button>
             </div>
           )}
 
           {showRelForm && (
-            <div className="bg-purple-50 p-6 rounded-lg mb-6">
-              <h3 className="text-lg font-semibold mb-4">Neue Beziehung hinzufügen</h3>
+            <div className="bg-purple-50 p-3 sm:p-4 md:p-6 rounded-lg mb-4 md:mb-6">
+              <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Neue Beziehung hinzufügen</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-3 md:mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Person 1</label>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Person 1</label>
                   <select
                     value={relFormData.person1}
                     onChange={(e) => setRelFormData({...relFormData, person1: e.target.value})}
-                    className="w-full border border-gray-300 rounded px-3 py-2"
+                    className="w-full border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   >
                     <option value="">Wählen...</option>
                     {people.map(p => (
@@ -777,11 +779,11 @@ const GenogramGenerator = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Person 2</label>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Person 2</label>
                   <select
                     value={relFormData.person2}
                     onChange={(e) => setRelFormData({...relFormData, person2: e.target.value})}
-                    className="w-full border border-gray-300 rounded px-3 py-2"
+                    className="w-full border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   >
                     <option value="">Wählen...</option>
                     {people.map(p => (
@@ -791,7 +793,7 @@ const GenogramGenerator = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Beziehungstyp</label>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Beziehungstyp</label>
                   <select
                     value={relFormData.type}
                     onChange={(e) => {
@@ -799,7 +801,7 @@ const GenogramGenerator = () => {
                       const firstSubtype = Object.keys(relationshipTypes[newType].subtypes)[0];
                       setRelFormData({...relFormData, type: newType, subtype: firstSubtype});
                     }}
-                    className="w-full border border-gray-300 rounded px-3 py-2"
+                    className="w-full border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   >
                     {Object.entries(relationshipTypes).map(([key, value]) => (
                       <option key={key} value={key}>{value.label}</option>
@@ -808,11 +810,11 @@ const GenogramGenerator = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Spezifische Beziehung</label>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Spezifische Beziehung</label>
                   <select
                     value={relFormData.subtype}
                     onChange={(e) => setRelFormData({...relFormData, subtype: e.target.value})}
-                    className="w-full border border-gray-300 rounded px-3 py-2"
+                    className="w-full border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   >
                     {Object.entries(relationshipTypes[relFormData.type].subtypes).map(([key, label]) => (
                       <option key={key} value={key}>{label}</option>
@@ -820,12 +822,12 @@ const GenogramGenerator = () => {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Beziehungsqualität</label>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Beziehungsqualität</label>
                   <select
                     value={relFormData.quality}
                     onChange={(e) => setRelFormData({...relFormData, quality: e.target.value})}
-                    className="w-full border border-gray-300 rounded px-3 py-2"
+                    className="w-full border border-gray-300 rounded px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base"
                   >
                     {Object.entries(relationshipQualities).map(([key, data]) => (
                       <option key={key} value={key}>{data.label}</option>
@@ -836,36 +838,59 @@ const GenogramGenerator = () => {
 
               <button
                 onClick={addRelationship}
-                className="flex items-center gap-2 bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700 transition"
+                className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 md:px-6 md:py-2 rounded hover:bg-purple-700 transition text-sm md:text-base w-full sm:w-auto justify-center"
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-4 h-4 md:w-5 md:h-5" />
                 Beziehung hinzufügen
               </button>
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="space-y-6">
+          {/* Mobile Stats Toggle Button */}
+          {people.length > 0 && (
+            <button
+              onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+              className="lg:hidden w-full bg-gradient-to-r from-teal-500 to-blue-500 text-white px-4 py-3 rounded-xl mb-4 flex items-center justify-between hover:shadow-lg transition"
+            >
+              <span className="font-semibold flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Personen & Statistiken ({people.length})
+              </span>
+              {showMobileSidebar ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            </button>
+          )}
+
+          {/* Mobile Sidebar Dropdown */}
+          {showMobileSidebar && (
+            <div className="lg:hidden space-y-4 mb-6 animate-fade-in">
+              <StatsCard people={people} relationships={relationships} />
+              <PeopleList people={people} onEdit={editPerson} onDelete={deletePerson} />
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+            {/* Desktop Sidebar */}
+            <div className="hidden lg:block space-y-6">
               <StatsCard people={people} relationships={relationships} />
               <PeopleList people={people} onEdit={editPerson} onDelete={deletePerson} />
             </div>
             
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 md:space-y-6">
               {relationships.length > 0 && (
-                <div className="mb-6">
-                  <h2 className="text-xl font-semibold mb-3">Erfasste Beziehungen ({relationships.length})</h2>
+                <div className="mb-4 md:mb-6">
+                  <h2 className="text-lg md:text-xl font-semibold mb-2 md:mb-3">Erfasste Beziehungen ({relationships.length})</h2>
                   <div className="space-y-2">
                     {relationships.map(rel => (
-                      <div key={rel.id} className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl flex items-center justify-between hover:shadow-md transition-all">
-                        <div>
-                          <span className="font-medium">{getRelationshipLabel(rel)}</span>
-                          <span className="text-sm text-gray-600 ml-2">
+                      <div key={rel.id} className="bg-gradient-to-br from-purple-50 to-pink-50 p-3 md:p-4 rounded-xl flex items-center justify-between hover:shadow-md transition-all">
+                        <div className="flex-1 min-w-0 pr-2">
+                          <span className="font-medium text-sm md:text-base block truncate">{getRelationshipLabel(rel)}</span>
+                          <span className="text-xs md:text-sm text-gray-600">
                             ({relationshipQualities[rel.quality]?.label})
                           </span>
                         </div>
                         <button
                           onClick={() => deleteRelationship(rel.id)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 hover:text-red-800 flex-shrink-0"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -875,29 +900,29 @@ const GenogramGenerator = () => {
                 </div>
               )}
 
-              <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-8 card-hover">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-bold text-gray-800">Genogramm-Visualisierung</h2>
+              <div className="bg-white/95 backdrop-blur-sm rounded-xl md:rounded-2xl shadow-xl p-3 sm:p-4 md:p-8 card-hover">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                  <h2 className="text-lg md:text-2xl font-bold text-gray-800">Genogramm-Visualisierung</h2>
                   {people.length > 0 && (
                     <div className="flex gap-2">
                       <button
                         onClick={downloadAsPNG}
-                        className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
+                        className="flex items-center gap-1 md:gap-2 bg-green-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-green-700 transition text-xs md:text-base"
                       >
-                        <Download className="w-5 h-5" />
-                        Als PNG
+                        <Download className="w-4 h-4 md:w-5 md:h-5" />
+                        <span className="hidden sm:inline">PNG</span>
                       </button>
                       <button
                         onClick={downloadAsSVG}
-                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                        className="flex items-center gap-1 md:gap-2 bg-blue-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-blue-700 transition text-xs md:text-base"
                       >
-                        <Download className="w-5 h-5" />
-                        Als SVG
+                        <Download className="w-4 h-4 md:w-5 md:h-5" />
+                        <span className="hidden sm:inline">SVG</span>
                       </button>
                     </div>
                   )}
                 </div>
-                <div className="mb-4 p-3 bg-blue-50 rounded text-sm space-y-1">
+                <div className="mb-4 p-2 md:p-3 bg-blue-50 rounded text-xs md:text-sm space-y-1">
                   <div><strong>Legende - Personen:</strong></div>
                   <div>• Quadrat = Männlich, Kreis = Weiblich</div>
                   <div>• Grau mit Kreuzlinie = Verstorben</div>
@@ -913,12 +938,14 @@ const GenogramGenerator = () => {
                   <div>• <span style={{color: '#9b59b6'}}>Strich-Punkt lila</span> = Ambivalente Beziehung</div>
                 </div>
                 {people.length === 0 ? (
-                  <div className="text-center text-gray-500 py-12">
+                  <div className="text-center text-gray-500 py-8 md:py-12 text-sm md:text-base">
                     Fügen Sie Personen und Beziehungen hinzu, um das Genogramm zu erstellen
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    {renderGenogram()}
+                  <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
+                    <div className="min-w-max px-3 sm:px-4 md:px-0">
+                      {renderGenogram()}
+                    </div>
                   </div>
                 )}
               </div>
