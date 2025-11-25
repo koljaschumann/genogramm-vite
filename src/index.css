@@ -1,3 +1,114 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom Scrollbar */
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+  }
+}
+
+/* Smooth Animations */
+@layer base {
+  * {
+    @apply transition-colors duration-200;
+  }
+}
+
+/* Gradient Backgrounds */
+@layer utilities {
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .bg-gradient-success {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  }
+  
+  .bg-gradient-danger {
+    background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
+  }
+  
+  .bg-gradient-warning {
+    background: linear-gradient(135deg, #fbd38d 0%, #f6ad55 100%);
+  }
+  
+  .bg-gradient-male {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  }
+  
+  .bg-gradient-female {
+    background: linear-gradient(135deg, #ed64a6 0%, #d53f8c 100%);
+  }
+}
+
+/* Card Hover Effects */
+@layer components {
+  .card-hover {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  .card-hover:hover {
+    @apply -translate-y-1 shadow-xl;
+  }
+}
+
+/* Button Styles */
+@layer components {
+  .btn-modern {
+    @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300 ease-out shadow-md;
+  }
+  
+  .btn-modern:hover {
+    @apply -translate-y-0.5 shadow-lg;
+  }
+  
+  .btn-modern:active {
+    @apply translate-y-0 shadow-md;
+  }
+}
+
+/* Smooth fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Pulse animation for hints */
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}

@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Users, Plus, Trash2, Edit2, Save, X, Heart, AlertCircle, Download } from 'lucide-react';
 import BugReportButton from './components/BugReportButton';
+import StatsCard from './components/StatsCard';
+import PeopleList from './components/PeopleList';
 
 const GenogramGenerator = () => {
   const [people, setPeople] = useState([]);
@@ -641,9 +643,9 @@ const GenogramGenerator = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gradient-primary p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <Users className="w-8 h-8 text-blue-600" />
@@ -656,7 +658,7 @@ const GenogramGenerator = () => {
                   setShowForm(!showForm);
                   setShowRelForm(false);
                 }}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                className="flex items-center gap-2 bg-gradient-primary text-white btn-modern"
               >
                 {showForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                 {showForm ? 'Abbrechen' : 'Person hinzufügen'}
@@ -668,7 +670,7 @@ const GenogramGenerator = () => {
                     setShowRelForm(!showRelForm);
                     setShowForm(false);
                   }}
-                  className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition"
+                  className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white btn-modern"
                 >
                   {showRelForm ? <X className="w-5 h-5" /> : <Heart className="w-5 h-5" />}
                   {showRelForm ? 'Abbrechen' : 'Beziehung hinzufügen'}
@@ -945,83 +947,16 @@ const GenogramGenerator = () => {
             </div>
           )}
 
-          {/* Personenliste */}
-          {people.length > 0 && (
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-3">Erfasste Personen ({people.length})</h2>
-              <div className="space-y-3">
-                {people.map(person => (
-                  <div key={person.id} className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="font-bold text-lg">{person.name}</span>
-                          {person.isPatient && (
-                            <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded">PATIENT</span>
-                          )}
-                          <span className="text-sm text-gray-600">
-                            ({person.gender === 'male' ? '♂' : person.gender === 'female' ? '♀' : '⚧'})
-                            {person.age && ` ${person.age} Jahre`}
-                          </span>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                          {person.profession && (
-                            <div><strong>Beruf:</strong> {person.profession}</div>
-                          )}
-                          {person.education && (
-                            <div><strong>Bildung:</strong> {person.education}</div>
-                          )}
-                          {person.maritalStatus !== 'single' && (
-                            <div><strong>Familienstand:</strong> {person.maritalStatus}</div>
-                          )}
-                          {person.diagnoses && (
-                            <div className="text-red-700"><strong>Diagnosen:</strong> {person.diagnoses}</div>
-                          )}
-                          {person.addictions && (
-                            <div className="text-orange-700"><strong>Abhängigkeiten:</strong> {person.addictions}</div>
-                          )}
-                          {person.surgeries && (
-                            <div><strong>OPs:</strong> {person.surgeries}</div>
-                          )}
-                          {person.personality && (
-                            <div><strong>Persönlichkeit:</strong> {person.personality}</div>
-                          )}
-                          {person.mentalHealth && (
-                            <div><strong>Psych. Gesundheit:</strong> {person.mentalHealth}</div>
-                          )}
-                          {person.status === 'deceased' && person.causeOfDeath && (
-                            <div className="text-gray-700"><strong>Todesursache:</strong> {person.causeOfDeath}</div>
-                          )}
-                        </div>
-                        
-                        {person.notes && (
-                          <div className="mt-2 text-sm bg-yellow-50 p-2 rounded">
-                            <strong>Notizen:</strong> {person.notes}
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex gap-2 ml-4">
-                        <button
-                          onClick={() => editPerson(person)}
-                          className="text-blue-600 hover:text-blue-800"
-                        >
-                          <Edit2 className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => deletePerson(person.id)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+         {/* Main Layout mit Sidebar */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Sidebar */}
+            <div className="space-y-6">
+              <StatsCard people={people} relationships={relationships} />
+              <PeopleList people={people} onEdit={editPerson} onDelete={deletePerson} />
             </div>
-          )}
+            
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-6">
 
           {/* Beziehungsliste */}
           {relationships.length > 0 && (
@@ -1098,6 +1033,8 @@ const GenogramGenerator = () => {
           )}
         </div>
       </div>
+</div> {/* Ende Main Content */}
+          </div> {/* Ende Grid */}
 {<BugReportButton />}
     </div>
   );
