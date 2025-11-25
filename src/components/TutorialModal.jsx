@@ -150,14 +150,24 @@ export default function TutorialModal({ isOpen, onClose }) {
               <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold flex-shrink-0">1</div>
               <div>
                 <strong className="text-blue-900">Header-Bereich:</strong>
-                <p className="text-sm text-blue-800">Hauptaktionen wie "Person hinzufügen" und "Beziehung hinzufügen"</p>
+                <p className="text-sm text-blue-800">Hauptaktionen: "Person hinzufügen", "Beziehung hinzufügen", "Vorlagen", "Anleitung & Hilfe"</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 space-y-2">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center font-bold flex-shrink-0">2</div>
+              <div>
+                <strong className="text-green-900">Smart Suggestions:</strong>
+                <p className="text-sm text-green-800">Intelligente Vorschläge für nächste Schritte (erscheinen automatisch bei &lt; 10 Personen)</p>
               </div>
             </div>
           </div>
 
           <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 space-y-2">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold flex-shrink-0">2</div>
+              <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold flex-shrink-0">3</div>
               <div>
                 <strong className="text-purple-900">Linke Sidebar:</strong>
                 <p className="text-sm text-purple-800">Statistik-Übersicht und Personenliste mit Schnellzugriff</p>
@@ -165,22 +175,32 @@ export default function TutorialModal({ isOpen, onClose }) {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 space-y-2">
+          <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 space-y-2">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center font-bold flex-shrink-0">3</div>
+              <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold flex-shrink-0">4</div>
               <div>
-                <strong className="text-green-900">Hauptbereich:</strong>
-                <p className="text-sm text-green-800">Genogramm-Visualisierung mit automatischer Generationen-Anordnung</p>
+                <strong className="text-orange-900">Genogramm-Controls:</strong>
+                <p className="text-sm text-orange-800">Zoom (50-200%), Filter, Suche – für bessere Übersicht bei großen Familien</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4 space-y-2">
+          <div className="bg-gradient-to-br from-teal-50 to-teal-100 rounded-xl p-4 space-y-2">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center font-bold flex-shrink-0">4</div>
+              <div className="w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center font-bold flex-shrink-0">5</div>
               <div>
-                <strong className="text-red-900">Bug-Report-Button:</strong>
-                <p className="text-sm text-red-800">Unten rechts – für Feedback und Fehlermeldungen</p>
+                <strong className="text-teal-900">Hauptbereich:</strong>
+                <p className="text-sm text-teal-800">Genogramm-Visualisierung mit automatischer Generationen-Anordnung</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-4 space-y-2">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold flex-shrink-0">6</div>
+              <div>
+                <strong className="text-amber-900">Automatische Speicherung:</strong>
+                <p className="text-sm text-amber-800">Alle 30 Sekunden automatisch – zusätzlich manuell mit Strg+S</p>
               </div>
             </div>
           </div>
@@ -255,6 +275,61 @@ export default function TutorialModal({ isOpen, onClose }) {
             <p className="text-sm">
               <strong>Tipp:</strong> Beginnen Sie mit dem/der Patient:in und arbeiten Sie sich dann 
               Generation für Generation nach oben (Eltern, Großeltern).
+            </p>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'new-features',
+      icon: Lightbulb,
+      title: 'Neue Funktionen & Arbeitserleichterungen',
+      content: (
+        <div className="space-y-4 text-gray-700">
+          <h4 className="font-semibold text-gray-800">Schnelleinstieg mit Vorlagen</h4>
+          <p className="leading-relaxed">
+            Klicken Sie auf den <strong className="text-green-600">📋 Vorlagen</strong>-Button im Header, 
+            um aus 5 vorgefertigten Familienstrukturen zu wählen:
+          </p>
+          
+          <div className="grid grid-cols-1 gap-2 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-green-600">•</span>
+              <span><strong>Kleinfamilie:</strong> 2 Eltern + 2 Kinder</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-green-600">•</span>
+              <span><strong>3 Generationen:</strong> Großeltern, Eltern, Kind</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-green-600">•</span>
+              <span><strong>Patchwork:</strong> Geschiedene Eltern mit neuen Partnern</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-green-600">•</span>
+              <span><strong>Erweiterte Familie:</strong> Mit Tanten, Onkeln, Cousins</span>
+            </div>
+          </div>
+
+          <h4 className="font-semibold text-gray-800 mt-4">Smart Suggestions (Intelligente Vorschläge)</h4>
+          <p className="leading-relaxed text-sm">
+            Die Anwendung analysiert Ihr Genogramm und macht automatisch Vorschläge für sinnvolle 
+            nächste Schritte – z.B. "Eltern ergänzen", "Profile vervollständigen", "Patient markieren".
+          </p>
+
+          <h4 className="font-semibold text-gray-800 mt-4">Zoom & Filter für große Familien</h4>
+          <div className="bg-blue-50 rounded-lg p-3">
+            <div className="space-y-2 text-sm">
+              <div><strong>🔍 Zoom:</strong> 50% - 200% stufenlos einstellbar</div>
+              <div><strong>🎯 Filter:</strong> Nach Status (lebend/verstorben), Generation, Beziehungen</div>
+              <div><strong>🔎 Suche:</strong> Personen nach Name, Beruf oder Diagnose finden</div>
+            </div>
+          </div>
+
+          <div className="bg-purple-50 rounded-xl p-4 border-l-4 border-purple-500 mt-4">
+            <p className="text-sm">
+              <strong>💡 Tipp:</strong> Bei großen Genogrammen (10+ Personen) nutzen Sie Zoom 
+              und Filter für bessere Übersicht!
             </p>
           </div>
         </div>
@@ -357,6 +432,23 @@ export default function TutorialModal({ isOpen, onClose }) {
             </div>
 
             <div className="flex items-center gap-3">
+              <div className="relative w-12 h-12 flex-shrink-0 flex items-center justify-center">
+                <svg width="48" height="48" viewBox="0 0 48 48">
+                  <polygon 
+                    points="24,4 44,40 4,40" 
+                    fill="#e1bee7" 
+                    stroke="#9c27b0" 
+                    strokeWidth="2"
+                  />
+                </svg>
+              </div>
+              <div>
+                <strong>Dreieck = Divers</strong>
+                <p className="text-sm text-gray-600">Lila Füllung für lebende Personen</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 border-2 border-gray-500 bg-gray-300 flex-shrink-0">
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-full h-0.5 bg-gray-700 rotate-45"></div>
@@ -394,7 +486,8 @@ export default function TutorialModal({ isOpen, onClose }) {
         <div className="space-y-4 text-gray-700">
           <h4 className="font-semibold text-gray-800">Export-Funktionen</h4>
           <p className="leading-relaxed">
-            Das fertige Genogramm können Sie in verschiedenen Formaten exportieren:
+            Das fertige Genogramm können Sie in verschiedenen Formaten exportieren. Klicken Sie auf den 
+            <strong className="text-purple-600"> "Mehr"-Button</strong> neben PNG/SVG für erweiterte Export-Optionen:
           </p>
 
           <div className="space-y-3">
@@ -403,11 +496,11 @@ export default function TutorialModal({ isOpen, onClose }) {
                 <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center text-white">
                   📥
                 </div>
-                <strong className="text-green-900">Als PNG exportieren</strong>
+                <strong className="text-green-900">PNG (Pixelgrafik)</strong>
               </div>
               <p className="text-sm text-green-800">
-                Pixelgrafik für Berichte, Dokumentation und Präsentationen. 
-                Ideal für die Integration in Falldokumentation.
+                Ideal für Berichte, Dokumentation und Präsentationen. 
+                Hohe Qualität (ca. 100-500 KB). Perfekt für Falldokumentation.
               </p>
             </div>
 
@@ -416,29 +509,62 @@ export default function TutorialModal({ isOpen, onClose }) {
                 <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white">
                   📥
                 </div>
-                <strong className="text-blue-900">Als SVG exportieren</strong>
+                <strong className="text-blue-900">SVG (Vektorgrafik)</strong>
               </div>
               <p className="text-sm text-blue-800">
-                Vektorgrafik für verlustfreie Skalierung. Kann in Grafikprogrammen 
-                weiterbearbeitet werden.
+                Verlustfreie Skalierung für Druck und professionelle Verwendung. 
+                Kann in Grafikprogrammen weiterbearbeitet werden (ca. 10-50 KB).
+              </p>
+            </div>
+
+            <div className="bg-red-50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center text-white">
+                  📄
+                </div>
+                <strong className="text-red-900">PDF (Dokument)</strong>
+                <span className="ml-2 px-2 py-0.5 bg-red-200 text-red-800 text-xs rounded-full">Neu</span>
+              </div>
+              <p className="text-sm text-red-800">
+                Professionelles Format mit Metadaten und Legende. Ideal für Archivierung 
+                und Weitergabe an Kolleg:innen (ca. 50-200 KB).
+              </p>
+            </div>
+
+            <div className="bg-purple-50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center text-white">
+                  💾
+                </div>
+                <strong className="text-purple-900">JSON (Daten-Backup)</strong>
+                <span className="ml-2 px-2 py-0.5 bg-purple-200 text-purple-800 text-xs rounded-full">Neu</span>
+              </div>
+              <p className="text-sm text-purple-800">
+                Vollständige Datensicherung für Import/Export zwischen Systemen. 
+                Enthält alle Personen, Beziehungen und Metadaten. Perfekt für Backup!
               </p>
             </div>
           </div>
 
           <div className="bg-amber-50 rounded-xl p-4 border-l-4 border-amber-500 mt-4">
-            <strong className="text-amber-900">Hinweis zur Speicherung:</strong>
+            <strong className="text-amber-900">💡 Automatische Speicherung:</strong>
             <p className="text-sm text-amber-800 mt-2">
-              Die Anwendung speichert Daten aktuell <strong>lokal im Browser</strong>. 
-              Exportieren Sie wichtige Genogramme regelmäßig als PNG/SVG zur Sicherung.
+              Die Anwendung speichert Ihre Arbeit <strong>automatisch alle 30 Sekunden</strong> lokal im Browser. 
+              Zusätzlich können Sie jederzeit mit <kbd className="px-2 py-1 bg-amber-200 rounded text-xs">Strg+S</kbd> manuell speichern.
+            </p>
+            <p className="text-sm text-amber-800 mt-2">
+              <strong>Wichtig:</strong> Browser-Daten können gelöscht werden. Exportieren Sie wichtige 
+              Genogramme regelmäßig als <strong>JSON-Backup</strong> zur Sicherung!
             </p>
           </div>
 
           <h4 className="font-semibold text-gray-800 mt-6">Datenschutz & Vertraulichkeit</h4>
           <ul className="list-disc list-inside space-y-2 text-sm ml-2">
-            <li>Alle Daten verbleiben auf Ihrem Gerät</li>
+            <li>Alle Daten verbleiben auf Ihrem Gerät (lokale Speicherung)</li>
             <li>Keine Übertragung an externe Server</li>
             <li>Exportierte Dateien sollten gemäß Datenschutzrichtlinien gesichert werden</li>
             <li>Beachten Sie bei Cloud-Speicherung die DSGVO-Anforderungen</li>
+            <li>JSON-Exporte enthalten sensible Daten – sicher aufbewahren!</li>
           </ul>
         </div>
       )

@@ -5,6 +5,12 @@ import StatsCard from './components/StatsCard';
 import PeopleList from './components/PeopleList';
 import TutorialModal from './components/TutorialModal';
 import Footer from './components/Footer';
+// Phase 2 Components
+import OnboardingTour from './components/OnboardingTour';
+import SmartSuggestions from './components/SmartSuggestions';
+import TemplatesModal from './components/TemplatesModal';
+import GenogramControls from './components/GenogramControls';
+import ExportModal from './components/ExportModal';
 
 // Logo Component - Variant 2 (Professional Icon)
 const GenoFlowLogo = ({ size = "default" }) => {
@@ -84,6 +90,15 @@ const GenogramGenerator = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [toast, setToast] = useState(null);
   const [lastSaved, setLastSaved] = useState(null);
+
+  // Phase 2 States
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const [filters, setFilters] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -202,6 +217,20 @@ const GenogramGenerator = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [people.length]);
 
+  // Phase 2: First Visit Check
+  useEffect(() => {
+    const hasVisited = localStorage.getItem('genoflow_has_visited');
+    const tourCompleted = localStorage.getItem('genoflow_tour_completed');
+    
+    // Show onboarding if:
+    // 1. Never visited before
+    // 2. No data exists (empty genogram)
+    // 3. Tour not completed
+    if (!hasVisited && people.length === 0 && !tourCompleted) {
+      setShowOnboarding(true);
+    }
+  }, [people.length]);
+
   const manualSave = () => {
     try {
       localStorage.setItem('genoflow_people', JSON.stringify(people));
@@ -213,6 +242,136 @@ const GenogramGenerator = () => {
     } catch (error) {
       setToast({ message: 'Speichern fehlgeschlagen', type: 'error' });
     }
+  };
+
+  // Phase 2: Handler Functions
+  const handleOnboardingComplete = (choice) => {
+    setOnboardingCompleted(true);
+    setShowOnboarding(false);
+    localStorage.setItem('genoflow_tour_completed', 'true');
+    localStorage.setItem('genoflow_has_visited', 'true');
+    
+    if (choice === 'template') {
+      setShowTemplates(true);
+    }
+    
+    setToast({ message: 'Willkommen bei GenoFlow!', type: 'success' });
+  };
+
+  const handleTemplateSelect = (template) => {
+    if (template.id === 'empty') {
+      setToast({ message: 'Leeres Genogramm gestartet', type: 'success' });
+      return;
+    }
+    
+    // Generate unique IDs for template data
+    const timestamp = Date.now();
+    const newPeople = template.data.people.map((p, index) => ({
+      ...p,
+      id: timestamp + index
+    }));
+    
+    // Map relationships with new IDs
+    const idMap = {};
+    template.data.people.forEach((p, index) => {
+      idMap[p.id] = timestamp + index;
+    });
+    
+    const newRelationships = template.data.relationships.map((r, index) => ({
+      ...r,
+      id: timestamp + 1000 + index,
+      person1: idMap[r.person1],
+      person2: idMap[r.person2]
+    }));
+    
+    setPeople(newPeople);
+    setRelationships(newRelationships);
+    setToast({ message: `Vorlage "${template.name}" geladen`, type: 'success' });
+  };
+
+  const handleSuggestionAction = (actionType, actionData) => {
+    switch (actionType) {
+      case 'add-person':
+        resetForm();
+        setShowForm(true);
+        setShowRelForm(false);
+        break;
+      case 'add-relationship':
+        resetRelForm();
+        setShowRelForm(true);
+        setShowForm(false);
+        break;
+      case 'edit-person':
+        if (actionData) {
+          editPerson(actionData);
+        }
+        break;
+      case 'mark-patient':
+        if (people.length > 0) {
+          editPerson(people[0]);
+        }
+        break;
+      case 'add-parents':
+      case 'add-sibling':
+        setToast({ message: 'Feature kommt bald!', type: 'info' });
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+  };
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
+
+  const handleExport = (format, options) => {
+    switch (format) {
+      case 'png':
+        downloadAsPNG();
+        break;
+      case 'svg':
+        downloadAsSVG();
+        break;
+      case 'pdf':
+        downloadAsPDF(options);
+        break;
+      case 'json':
+        downloadAsJSON();
+        break;
+      default:
+        break;
+    }
+  };
+
+  const downloadAsJSON = () => {
+    const data = {
+      people,
+      relationships,
+      exportedAt: new Date().toISOString(),
+      version: '1.0.0',
+      appName: 'GenoFlow'
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `genoflow_${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    setToast({ message: 'JSON exportiert', type: 'success' });
+  };
+
+  const downloadAsPDF = (options) => {
+    setToast({ message: 'PDF-Export in Entwicklung...', type: 'info' });
+    setTimeout(() => {
+      setToast({ message: 'PDF-Feature wird bald verfügbar sein', type: 'info' });
+    }, 1000);
   };
 
   const getTimeSinceSave = () => {
@@ -575,19 +734,186 @@ const GenogramGenerator = () => {
           const y2 = 80 + gen2 * 200 + 30;
 
           const qualityStyle = relationshipQualities[rel.quality] || relationshipQualities['normal'];
+          
+          // Helper function to render different line patterns
+          const renderRelationshipLine = () => {
+            const midX = (x1 + x2) / 2;
+            const midY = (y1 + y2) / 2;
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx);
+            
+            switch (qualityStyle.pattern) {
+              case 'solid':
+                return (
+                  <line 
+                    x1={x1} y1={y1} x2={x2} y2={y2}
+                    stroke={qualityStyle.color}
+                    strokeWidth={qualityStyle.width || 2}
+                  />
+                );
+              
+              case 'double':
+                const offset = 3;
+                const perpX = -Math.sin(angle) * offset;
+                const perpY = Math.cos(angle) * offset;
+                return (
+                  <g>
+                    <line 
+                      x1={x1 + perpX} y1={y1 + perpY} 
+                      x2={x2 + perpX} y2={y2 + perpY}
+                      stroke={qualityStyle.color}
+                      strokeWidth={qualityStyle.width || 2}
+                    />
+                    <line 
+                      x1={x1 - perpX} y1={y1 - perpY} 
+                      x2={x2 - perpX} y2={y2 - perpY}
+                      stroke={qualityStyle.color}
+                      strokeWidth={qualityStyle.width || 2}
+                    />
+                  </g>
+                );
+              
+              case 'zigzag':
+                const zigzagPath = [];
+                const segments = 8;
+                const amplitude = 8;
+                for (let i = 0; i <= segments; i++) {
+                  const t = i / segments;
+                  const x = x1 + dx * t;
+                  const y = y1 + dy * t;
+                  const offsetZig = (i % 2 === 0 ? amplitude : -amplitude);
+                  const zigX = x - Math.sin(angle) * offsetZig;
+                  const zigY = y + Math.cos(angle) * offsetZig;
+                  zigzagPath.push(i === 0 ? `M ${zigX} ${zigY}` : `L ${zigX} ${zigY}`);
+                }
+                return (
+                  <path
+                    d={zigzagPath.join(' ')}
+                    stroke={qualityStyle.color}
+                    strokeWidth={qualityStyle.width || 2}
+                    fill="none"
+                  />
+                );
+              
+              case 'wavy':
+                const wavePath = [];
+                const waveSegments = 20;
+                const waveAmplitude = 6;
+                for (let i = 0; i <= waveSegments; i++) {
+                  const t = i / waveSegments;
+                  const x = x1 + dx * t;
+                  const y = y1 + dy * t;
+                  const wave = Math.sin(t * Math.PI * 4) * waveAmplitude;
+                  const waveX = x - Math.sin(angle) * wave;
+                  const waveY = y + Math.cos(angle) * wave;
+                  wavePath.push(i === 0 ? `M ${waveX} ${waveY}` : `L ${waveX} ${waveY}`);
+                }
+                return (
+                  <path
+                    d={wavePath.join(' ')}
+                    stroke={qualityStyle.color}
+                    strokeWidth={qualityStyle.width || 2}
+                    fill="none"
+                  />
+                );
+              
+              case 'dashed':
+                return (
+                  <line 
+                    x1={x1} y1={y1} x2={x2} y2={y2}
+                    stroke={qualityStyle.color}
+                    strokeWidth={qualityStyle.width || 2}
+                    strokeDasharray="10,5"
+                  />
+                );
+              
+              case 'crossed':
+                const crossSize = 15;
+                return (
+                  <g>
+                    <line 
+                      x1={x1} y1={y1} x2={x2} y2={y2}
+                      stroke={qualityStyle.color}
+                      strokeWidth={qualityStyle.width || 2}
+                    />
+                    <line 
+                      x1={midX - crossSize} y1={midY - crossSize}
+                      x2={midX + crossSize} y2={midY + crossSize}
+                      stroke={qualityStyle.color}
+                      strokeWidth={qualityStyle.width || 2}
+                    />
+                    <line 
+                      x1={midX - crossSize} y1={midY + crossSize}
+                      x2={midX + crossSize} y2={midY - crossSize}
+                      stroke={qualityStyle.color}
+                      strokeWidth={qualityStyle.width || 2}
+                    />
+                  </g>
+                );
+              
+              case 'double-crossed':
+                const dcSize = 15;
+                const dcOffset = 20;
+                return (
+                  <g>
+                    <line 
+                      x1={x1} y1={y1} x2={x2} y2={y2}
+                      stroke={qualityStyle.color}
+                      strokeWidth={qualityStyle.width || 2}
+                    />
+                    {/* First cross */}
+                    <line 
+                      x1={midX - dcOffset - dcSize} y1={midY - dcSize}
+                      x2={midX - dcOffset + dcSize} y2={midY + dcSize}
+                      stroke={qualityStyle.color}
+                      strokeWidth={qualityStyle.width || 2}
+                    />
+                    <line 
+                      x1={midX - dcOffset - dcSize} y1={midY + dcSize}
+                      x2={midX - dcOffset + dcSize} y2={midY - dcSize}
+                      stroke={qualityStyle.color}
+                      strokeWidth={qualityStyle.width || 2}
+                    />
+                    {/* Second cross */}
+                    <line 
+                      x1={midX + dcOffset - dcSize} y1={midY - dcSize}
+                      x2={midX + dcOffset + dcSize} y2={midY + dcSize}
+                      stroke={qualityStyle.color}
+                      strokeWidth={qualityStyle.width || 2}
+                    />
+                    <line 
+                      x1={midX + dcOffset - dcSize} y1={midY + dcSize}
+                      x2={midX + dcOffset + dcSize} y2={midY - dcSize}
+                      stroke={qualityStyle.color}
+                      strokeWidth={qualityStyle.width || 2}
+                    />
+                  </g>
+                );
+              
+              case 'dash-dot':
+                return (
+                  <line 
+                    x1={x1} y1={y1} x2={x2} y2={y2}
+                    stroke={qualityStyle.color}
+                    strokeWidth={qualityStyle.width || 2}
+                    strokeDasharray="10,5,2,5"
+                  />
+                );
+              
+              default:
+                return (
+                  <line 
+                    x1={x1} y1={y1} x2={x2} y2={y2}
+                    stroke={qualityStyle.color}
+                    strokeWidth={qualityStyle.width || 2}
+                  />
+                );
+            }
+          };
 
-          return (
-            <line 
-              key={rel.id} 
-              x1={x1} 
-              y1={y1} 
-              x2={x2} 
-              y2={y2} 
-              stroke={qualityStyle.color} 
-              strokeWidth={qualityStyle.width || 2}
-              strokeDasharray={qualityStyle.dash}
-            />
-          );
+          return <g key={rel.id}>{renderRelationshipLine()}</g>;
         })}
 
         {Object.keys(genLevels).map(gen => 
@@ -619,13 +945,20 @@ const GenogramGenerator = () => {
                     stroke="#2c3e50" 
                     strokeWidth="2"
                   />
-                ) : (
+                ) : person.gender === 'female' ? (
                   <circle 
                     cx={x + 30} 
                     cy={y + 30} 
                     r="30" 
                     fill={person.status === 'deceased' ? '#bdc3c7' : '#e91e63'} 
                     stroke="#2c3e50" 
+                    strokeWidth="2"
+                  />
+                ) : (
+                  <polygon
+                    points={`${x + 30},${y} ${x + 60},${y + 52} ${x},${y + 52}`}
+                    fill={person.status === 'deceased' ? '#bdc3c7' : '#9c27b0'}
+                    stroke="#2c3e50"
                     strokeWidth="2"
                   />
                 )}
@@ -761,12 +1094,28 @@ const GenogramGenerator = () => {
                   className="group relative flex items-center gap-1 md:gap-2 bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 border-2 border-purple-600 dark:border-purple-400 px-2 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-purple-50 dark:hover:bg-gray-600 transition text-xs md:text-base font-semibold"
                 >
                   <span className="text-base md:text-lg">📚</span>
-                  <span className="hidden xs:inline">Tutorial</span>
+                  <span className="hidden sm:inline">Anleitung & Hilfe</span>
+                  <span className="sm:hidden">Hilfe</span>
                   
                   {/* Tooltip */}
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap pointer-events-none z-50">
-                    Tutorial öffnen
+                    Ausführliches Tutorial
                     <kbd className="ml-2 px-1.5 py-0.5 bg-gray-700 rounded text-[10px]">Strg+Shift+?</kbd>
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900 dark:border-t-gray-800"></div>
+                  </div>
+                </button>
+
+                {/* Phase 2: Templates Button */}
+                <button
+                  onClick={() => setShowTemplates(true)}
+                  className="group relative flex items-center gap-1 md:gap-2 bg-green-600 text-white px-2 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-green-700 transition text-xs md:text-base font-semibold"
+                >
+                  <span className="text-base md:text-lg">📋</span>
+                  <span className="hidden xs:inline">Vorlagen</span>
+                  
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap pointer-events-none z-50">
+                    Vorlagen verwenden
                     <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900 dark:border-t-gray-800"></div>
                   </div>
                 </button>
@@ -817,7 +1166,14 @@ const GenogramGenerator = () => {
               </div>
             </div>
 
-
+            {/* Phase 2: Smart Suggestions */}
+            {people.length < 10 && (
+              <SmartSuggestions 
+                people={people}
+                relationships={relationships}
+                onAction={handleSuggestionAction}
+              />
+            )}
 
             {showForm && (
               <div className="bg-gray-50 dark:bg-gray-700/50 p-3 sm:p-4 md:p-6 rounded-lg mb-4 md:mb-6">
@@ -1158,12 +1514,32 @@ const GenogramGenerator = () => {
                           <Download className="w-4 h-4 md:w-5 md:h-5" />
                           <span className="hidden sm:inline">SVG</span>
                         </button>
+                        <button
+                          onClick={() => setShowExportModal(true)}
+                          className="flex items-center gap-1 md:gap-2 bg-purple-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-purple-700 transition text-xs md:text-base"
+                        >
+                          <Download className="w-4 h-4 md:w-5 md:h-5" />
+                          <span className="hidden sm:inline">Mehr</span>
+                        </button>
                       </div>
                     )}
                   </div>
+
+                  {/* Phase 2: Genogram Controls */}
+                  {people.length > 0 && (
+                    <GenogramControls
+                      zoom={zoom}
+                      onZoomChange={setZoom}
+                      people={people}
+                      relationships={relationships}
+                      onFilterChange={handleFilterChange}
+                      onSearch={handleSearch}
+                    />
+                  )}
+
                   <div className="mb-4 p-2 md:p-3 bg-blue-50 dark:bg-blue-900/30 rounded text-xs md:text-sm space-y-1 dark:text-gray-300">
                     <div><strong>Legende - Personen:</strong></div>
-                    <div>• Quadrat = Männlich, Kreis = Weiblich</div>
+                    <div>• Quadrat = Männlich, Kreis = Weiblich, Dreieck = Divers</div>
                     <div>• Grau mit Kreuzlinie = Verstorben</div>
                     <div>• Orange Rahmen = Patient/in</div>
                     <div className="mt-2"><strong>Legende - Beziehungen:</strong></div>
@@ -1182,7 +1558,7 @@ const GenogramGenerator = () => {
                     </div>
                   ) : (
                     <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
-                      <div className="min-w-max px-3 sm:px-4 md:px-0">
+                      <div className="min-w-max px-3 sm:px-4 md:px-0" style={{ transform: `scale(${zoom})`, transformOrigin: 'top left', transition: 'transform 0.2s ease' }}>
                         {renderGenogram()}
                       </div>
                     </div>
@@ -1194,6 +1570,30 @@ const GenogramGenerator = () => {
             <TutorialModal 
               isOpen={showTutorial} 
               onClose={() => setShowTutorial(false)} 
+            />
+
+            {/* Phase 2: Modals */}
+            <OnboardingTour
+              isActive={showOnboarding}
+              onComplete={handleOnboardingComplete}
+              onSkip={() => {
+                setShowOnboarding(false);
+                localStorage.setItem('genoflow_has_visited', 'true');
+              }}
+            />
+
+            <TemplatesModal
+              isOpen={showTemplates}
+              onClose={() => setShowTemplates(false)}
+              onSelectTemplate={handleTemplateSelect}
+            />
+
+            <ExportModal
+              isOpen={showExportModal}
+              onClose={() => setShowExportModal(false)}
+              onExport={handleExport}
+              people={people}
+              relationships={relationships}
             />
             
             <BugReportButton />
