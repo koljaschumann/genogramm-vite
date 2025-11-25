@@ -29,7 +29,7 @@ const Footer = () => {
             <ul className="space-y-2">
               <li>
                 <a 
-                  href="mailto:support@genoflow.app" 
+                  href="mailto:office@aitema.de" 
                   className="text-sm text-gray-300 hover:text-purple-300 transition flex items-center gap-2"
                 >
                   <Mail className="w-4 h-4" />
