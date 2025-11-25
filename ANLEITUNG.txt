@@ -1,0 +1,36 @@
+========================================
+GENOGRAMM-GENERATOR - PORTABLE VERSION
+========================================
+
+ERSTMALIGE INSTALLATION:
+========================
+1. Node.js installieren von: https://nodejs.org/de
+2. Computer neu starten
+3. In diesen Ordner navigieren
+4. Kommandozeile öffnen (cmd)
+5. Eingeben: npm install
+6. Warten bis fertig
+
+ANWENDUNG STARTEN:
+==================
+Doppelklick auf: start-genogramm.bat
+
+Der Browser öffnet sich automatisch.
+
+ANWENDUNG BEENDEN:
+==================
+Kommandozeilenfenster schließen (X klicken)
+
+AUF ANDEREN COMPUTER KOPIEREN:
+==============================
+1. Gesamten Ordner kopieren
+2. Node.js auf dem anderen PC installieren
+3. Einmalig "npm install" ausführen
+4. Dann start-genogramm.bat nutzen
+
+HINWEIS:
+========
+Die Daten werden aktuell NICHT automatisch gespeichert.
+Exportieren Sie regelmäßig Ihre Genogramme als PNG oder SVG!
+
+Bei Fragen: Siehe package.json für weitere Infos
