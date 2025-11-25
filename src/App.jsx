@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Users, Plus, Trash2, Edit2, Save, X, Heart, AlertCircle, Download } from 'lucide-react';
+import BugReportButton from './components/BugReportButton';
 
 const GenogramGenerator = () => {
   const [people, setPeople] = useState([]);
@@ -1097,6 +1098,7 @@ const GenogramGenerator = () => {
           )}
         </div>
       </div>
+{<BugReportButton />}
     </div>
   );
 };

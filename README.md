@@ -1,16 +1,51 @@
-# React + Vite
+# Bug-Report-System Dateien
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 📦 Inhalt dieses Pakets
 
-Currently, two official plugins are available:
+Diese Dateien implementieren ein AI-gesteuertes Bug-Report-System für deine Genogramm-App.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Dateien-Struktur:
 
-## React Compiler
+```
+📁 api/
+  └── create-issue.js              # Vercel Serverless Function für GitHub API
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+📁 src/
+  └── components/
+      ├── BugReportButton.jsx      # Floating Button (unten rechts)
+      └── BugReportModal.jsx       # AI-Chatbot Modal
 
-## Expanding the ESLint configuration
+📄 INTEGRATION_ANLEITUNG.md        # Detaillierte Schritt-für-Schritt Anleitung
+📄 README.md                        # Diese Datei
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🚀 Schnellstart
+
+1. **Dateien kopieren:** Kopiere die Ordner `api` und `src` in dein lokales `genogramm-vite` Projekt
+2. **Integration:** Folge der `INTEGRATION_ANLEITUNG.md`
+3. **Testen:** Lokal mit `npm run dev` testen
+4. **Deployen:** `git push` → automatisches Deployment auf Vercel
+
+## ✨ Features
+
+- 🤖 AI-geführter Bug-Report-Dialog (Claude API)
+- 📝 Automatische Issue-Erstellung auf GitHub
+- 🎨 Moderne UI mit Tailwind CSS
+- 📱 Responsive Design
+- 🔄 Automatische Browser/Device-Erkennung
+- 🏷️ Automatisches Labeling (bug, user-reported)
+
+## 📋 Voraussetzungen
+
+✅ GitHub Personal Access Token erstellt
+✅ Token in Vercel Environment Variables gespeichert
+✅ Bestehendes Vite/React Projekt
+✅ Tailwind CSS installiert
+
+## 📖 Nächste Schritte
+
+Öffne `INTEGRATION_ANLEITUNG.md` für die komplette Anleitung!
+
+---
+
+**Viel Erfolg! 🎉**
