@@ -53,12 +53,28 @@
     }
   }
 
+  @keyframes tooltip-appear {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(-5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
   .animate-slide-up {
     animation: slide-up 0.3s ease-out;
   }
 
   .animate-fade-in {
     animation: fade-in 0.3s ease-out;
+  }
+
+  /* Tooltip smooth appearance */
+  .group:hover .group-hover\:opacity-100 {
+    animation: tooltip-appear 0.2s ease-out;
   }
 
   /* Keyboard shortcuts styling */

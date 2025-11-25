@@ -745,19 +745,30 @@ const GenogramGenerator = () => {
                 {/* Dark Mode Toggle */}
                 <button
                   onClick={() => setDarkMode(!darkMode)}
-                  className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-1.5 md:px-3 md:py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-                  title="Dark Mode (Strg+D)"
+                  className="group relative flex items-center gap-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-1.5 md:px-3 md:py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
                 >
                   {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap pointer-events-none z-50">
+                    {darkMode ? 'Hell' : 'Dunkel'} Modus
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900 dark:border-t-gray-800"></div>
+                  </div>
                 </button>
 
                 <button
                   onClick={() => setShowTutorial(true)}
-                  className="flex items-center gap-1 md:gap-2 bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 border-2 border-purple-600 dark:border-purple-400 px-2 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-purple-50 dark:hover:bg-gray-600 transition text-xs md:text-base font-semibold"
-                  title="Tutorial öffnen (Strg+Shift+?)"
+                  className="group relative flex items-center gap-1 md:gap-2 bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 border-2 border-purple-600 dark:border-purple-400 px-2 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-purple-50 dark:hover:bg-gray-600 transition text-xs md:text-base font-semibold"
                 >
                   <span className="text-base md:text-lg">📚</span>
                   <span className="hidden xs:inline">Tutorial</span>
+                  
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap pointer-events-none z-50">
+                    Tutorial öffnen
+                    <kbd className="ml-2 px-1.5 py-0.5 bg-gray-700 rounded text-[10px]">Strg+Shift+?</kbd>
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900 dark:border-t-gray-800"></div>
+                  </div>
                 </button>
                 
                 <button
@@ -766,11 +777,19 @@ const GenogramGenerator = () => {
                     setShowForm(!showForm);
                     setShowRelForm(false);
                   }}
-                  className="flex items-center gap-1 md:gap-2 bg-gradient-primary text-white px-2 py-1.5 md:px-4 md:py-2 rounded-lg hover:shadow-lg transition text-xs md:text-base font-semibold"
-                  title="Person hinzufügen (Strg+P)"
+                  className="group relative flex items-center gap-1 md:gap-2 bg-gradient-primary text-white px-2 py-1.5 md:px-4 md:py-2 rounded-lg hover:shadow-lg transition text-xs md:text-base font-semibold"
                 >
                   {showForm ? <X className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <Plus className="w-3.5 h-3.5 md:w-5 md:h-5" />}
                   <span>{showForm ? 'Abbrechen' : 'Person'}</span>
+                  
+                  {/* Tooltip */}
+                  {!showForm && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap pointer-events-none z-50">
+                      Person hinzufügen
+                      <kbd className="ml-2 px-1.5 py-0.5 bg-gray-700 rounded text-[10px]">Strg+P</kbd>
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900 dark:border-t-gray-800"></div>
+                    </div>
+                  )}
                 </button>
                 
                 {people.length >= 2 && (
@@ -780,24 +799,25 @@ const GenogramGenerator = () => {
                       setShowRelForm(!showRelForm);
                       setShowForm(false);
                     }}
-                    className="flex items-center gap-1 md:gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-2 py-1.5 md:px-4 md:py-2 rounded-lg hover:shadow-lg transition text-xs md:text-base font-semibold"
-                    title="Beziehung hinzufügen (Strg+R)"
+                    className="group relative flex items-center gap-1 md:gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-2 py-1.5 md:px-4 md:py-2 rounded-lg hover:shadow-lg transition text-xs md:text-base font-semibold"
                   >
                     {showRelForm ? <X className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <Heart className="w-3.5 h-3.5 md:w-5 md:h-5" />}
                     <span>{showRelForm ? 'Abbrechen' : 'Beziehung'}</span>
+                    
+                    {/* Tooltip */}
+                    {!showRelForm && (
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap pointer-events-none z-50">
+                        Beziehung hinzufügen
+                        <kbd className="ml-2 px-1.5 py-0.5 bg-gray-700 rounded text-[10px]">Strg+R</kbd>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900 dark:border-t-gray-800"></div>
+                      </div>
+                    )}
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Keyboard Shortcuts Info */}
-            <div className="mb-4 p-2 bg-blue-50 dark:bg-blue-900/30 rounded text-xs flex flex-wrap gap-x-4 gap-y-1 text-gray-600 dark:text-gray-300">
-              <span>⌨️ Shortcuts:</span>
-              <span><kbd className="px-1 bg-white dark:bg-gray-700 rounded">Strg+P</kbd> Person</span>
-              <span><kbd className="px-1 bg-white dark:bg-gray-700 rounded">Strg+R</kbd> Beziehung</span>
-              <span><kbd className="px-1 bg-white dark:bg-gray-700 rounded">Strg+S</kbd> Speichern</span>
-              <span><kbd className="px-1 bg-white dark:bg-gray-700 rounded">Esc</kbd> Schließen</span>
-            </div>
+
 
             {showForm && (
               <div className="bg-gray-50 dark:bg-gray-700/50 p-3 sm:p-4 md:p-6 rounded-lg mb-4 md:mb-6">
